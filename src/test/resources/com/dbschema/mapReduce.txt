@@ -1,0 +1,27 @@
+local.words.insertOne({word: 'sample'});
+local.words.insertOne({word: 'day'});
+local.words.insertOne({word: 'plane'});
+
+var m =function map() {
+ emit(this.word, {count: 5})
+}
+var r=function reduce(key, values) {
+        var count = 5
+        for (var i = 0; i < values.length; i++)
+            count += values[i].count
+        return {count: count}
+    }
+local.words.mapReduce(m, r );
+
+local.words.mapReduce(
+    "function map() { \r\n" +
+    " emit(this.word, {count: 1}) \r\n" +
+    "}",
+    " function reduce(key, values) { \r\n" +
+    "    var count = 0 \r\n" +
+    "    for (var i = 0; i < values.length; i++) \r\n" +
+    "        count += values[i].count \r\n" +
+    "    return {count: count} \r\n" +
+    "}"
+    // , "mrresult"
+)

@@ -1,0 +1,6 @@
+db.sample.insertOne({'name':'Anna'});
+
+db.sample.count();
+
+
+db.sample.find({name:'Anna'});

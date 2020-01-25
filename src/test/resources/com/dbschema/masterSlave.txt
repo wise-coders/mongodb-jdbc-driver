@@ -1,0 +1,16 @@
+db.master.drop()
+db.slave.drop()
+
+db.master.insert( { _id: 1, item: "box1", qty: 21 } )
+db.master.insert( {  item: "box3", qty: 23 } )
+
+
+var itr = db.master.find().iterator()
+
+var oid = itr.next()._id
+print("ObjectId rec1 " + oid)
+db.slave.insert( { name: "slave1", master_id: oid } )
+
+var oid = itr.next()._id
+print("ObjectId rec2 " + oid)
+db.slave.insert( { name: "slave2", master_id: oid } )
