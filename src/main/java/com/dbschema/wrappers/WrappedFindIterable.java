@@ -62,6 +62,10 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
         return this;
     }
 
+    public WrappedFindIterable pretty(){
+        return this;
+    }
+
     public long count(){
         long cnt=0;
         for( TResult res : findIterable ){

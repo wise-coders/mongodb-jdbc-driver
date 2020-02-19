@@ -51,9 +51,24 @@ public class SimpleTest extends AbstractTestCase{
     @Test
     public void testFindAnd() throws Exception {
         Statement stmt=con.createStatement();
-        printResultSet( stmt.executeQuery("local.dragos_tasks.find({ $and: [ {'name':'DbSchema Free Version'}, {'name':'DbSchema Free Version'} ] } )") );
+        printResultSet( stmt.executeQuery("local.saple.find({ $and: [ {'name':'DbSchema Free Version'}, {'name':'DbSchema Free Version'} ] } )") );
         stmt.close();
     }
+
+    @Test
+    public void testFindAndOr() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.sample.find({'likes': {$gt:10}, $or: [{'by': 'tutorials point'}, {'title': 'MongoDB Overview' }]})") );
+        stmt.close();
+    }
+
+    @Test
+    public void testUpdate() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.sample.update({'title':'MongoDB Overview'},{$set:{'title':'New MongoDB Tutorial'}})") );
+        stmt.close();
+    }
+
 
     @Test
     public void testFindId() throws Exception {

@@ -417,6 +417,9 @@ public class WrappedMongoCollection<TDocument> {
         return mongoCollection.deleteOne( clientSession, toBson(filter), options );
     }
 
+    public DeleteResult remove(Map filter){
+        return mongoCollection.deleteMany( toBson( filter));
+    }
 
     public DeleteResult deleteMany(Map filter) {
         return mongoCollection.deleteMany( toBson(filter));
@@ -512,7 +515,6 @@ public class WrappedMongoCollection<TDocument> {
         return mongoCollection.updateMany( toBson(filter), toBson(update));
     }
 
-
     public UpdateResult updateMany(Bson filter, Bson update, UpdateOptions updateOptions) {
         return null;
     }
@@ -588,6 +590,11 @@ public class WrappedMongoCollection<TDocument> {
     }
 
 
+    public Object update(Map filter, Map update) {
+        return updateMany( filter, update);
+    }
+
+
     public Object findOneAndUpdate(Bson filter, Bson update) {
         return null;
     }
@@ -637,6 +644,10 @@ public class WrappedMongoCollection<TDocument> {
         mongoCollection.drop( clientSession );
     }
 
+
+    public String ensureIndex(Map keys) {
+        return createIndex( keys);
+    }
 
     public String createIndex(Map keys) {
         return mongoCollection.createIndex( toBson( keys ));
