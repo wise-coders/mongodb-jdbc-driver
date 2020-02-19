@@ -1,7 +1,9 @@
 package com.dbschema.wrappers;
 
-import com.google.gson.Gson;
-import com.mongodb.*;
+import com.mongodb.MongoNamespace;
+import com.mongodb.ReadConcern;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
@@ -12,10 +14,12 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.dbschema.Util.toBson;
+import static com.dbschema.Util.toBsonList;
 
 /**
  * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
@@ -27,28 +31,9 @@ public class WrappedMongoCollection<TDocument> {
         this.mongoCollection = base;
     }
 
-    static Bson toBson(Object obj ){
-        if ( obj instanceof Map ){
-            return new BasicDBObject((Map)obj);
-        } else {
-            String json = new Gson().toJson(obj);
-            return obj != null ? BasicDBObject.parse(json) : null;
-        }
-    }
 
     private TDocument toDocument( Map map ){
         return (TDocument)( new Document( map ));
-    }
-
-    private static List toBsonList(List list ){
-        if ( list != null ){
-            ArrayList<Object> ret = new ArrayList<>();
-            for ( Object obj : list ) {
-                ret.add( toBson( obj ));
-            }
-            return ret;
-        }
-        return list;
     }
 
     @Override

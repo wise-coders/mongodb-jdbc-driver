@@ -49,6 +49,13 @@ public class SimpleTest extends AbstractTestCase{
     }
 
     @Test
+    public void testFindAnd() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.dragos_tasks.find({ $and: [ {'name':'DbSchema Free Version'}, {'name':'DbSchema Free Version'} ] } )") );
+        stmt.close();
+    }
+
+    @Test
     public void testFindId() throws Exception {
         /*
         BasicDBObject query = new BasicDBObject();

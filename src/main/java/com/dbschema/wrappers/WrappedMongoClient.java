@@ -9,7 +9,10 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoIterable;
-import com.mongodb.event.*;
+import com.mongodb.event.ServerHeartbeatFailedEvent;
+import com.mongodb.event.ServerHeartbeatStartedEvent;
+import com.mongodb.event.ServerHeartbeatSucceededEvent;
+import com.mongodb.event.ServerMonitorListener;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 

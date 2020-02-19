@@ -62,7 +62,7 @@ task zip(type: Zip, dependsOn:['clean','jar']) {
 task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtime.allArtifacts.files
     from configurations.runtime
-    into "${project.projectDir}/../dbschema/src/dist/drivers/MongoDb/"
+    into "${project.projectDir}/../../dbschema/src/dist/drivers/MongoDb/"
 }
 
 task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {

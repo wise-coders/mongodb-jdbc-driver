@@ -15,6 +15,8 @@ import org.bson.conversions.Bson;
 import java.util.List;
 import java.util.Map;
 
+import static com.dbschema.Util.toBson;
+
 
 /**
  * Wrapper class around MongoDatabase with direct access to collections as member variables.
@@ -72,7 +74,7 @@ public class WrappedMongoDatabase extends AbstractJSObject {
     }
 
     public Document runCommand( Map map ){
-        return mongoDatabase.runCommand(WrappedMongoCollection.toBson(map));
+        return mongoDatabase.runCommand( toBson(map));
     }
 
     public Document runCommand(Bson bson, ReadPreference readPreference) {
@@ -86,8 +88,6 @@ public class WrappedMongoDatabase extends AbstractJSObject {
     public <TResult> TResult runCommand(Bson bson, ReadPreference readPreference, Class<TResult> tResultClass) {
         return mongoDatabase.runCommand( bson, readPreference,  tResultClass);
     }
-
-
 
     public void drop() {
         mongoDatabase.drop();

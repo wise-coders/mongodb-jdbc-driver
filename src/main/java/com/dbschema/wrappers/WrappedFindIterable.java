@@ -11,9 +11,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.dbschema.Util.toBson;
 
 
 /**
@@ -37,7 +38,7 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
     }
 
     public WrappedFindIterable filter(Map map) {
-        findIterable.filter( WrappedMongoCollection.toBson( map ) );
+        findIterable.filter( toBson( map ) );
         return this;
     }
 
@@ -47,7 +48,7 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
     }
 
     public WrappedFindIterable projection(Map map) {
-        findIterable.projection( WrappedMongoCollection.toBson( map ) );
+        findIterable.projection( toBson( map ) );
         return this;
     }
 
@@ -57,7 +58,7 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
     }
 
     public WrappedFindIterable sort(Map map) {
-        findIterable.sort( WrappedMongoCollection.toBson( map ) );
+        findIterable.sort( toBson( map ) );
         return this;
     }
 
