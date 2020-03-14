@@ -26,7 +26,7 @@ The number of scanned documents can be set in the URL using the parameter scan=<
 
 ## License
 
-BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/wise-coders/mongodb-jdbc-driver.
 
 ## Download JDBC Driver Binary Distribution
 
