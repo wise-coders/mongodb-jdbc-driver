@@ -1,26 +1,32 @@
-# MongoDb JDBC Driver
+# Open Source MongoDb JDBC Driver
 
-JDBC driver capable to execute native MongoDb queries, similar with Mongo Shell. 
-The driver is written by [DbSchema Database Designer team](https://dbschema.com)
-for the tool and for everybody how needs an MongoDb JDBC driver. 
+The driver is written by [DbSchema MongoDb GUI Tool](https://dbschema.com) for everybody how needs an MongoDb JDBC driver. 
 
-The driver is using the native [MongoDb Java driver](https://mongodb.github.io/mongo-java-driver/) to connect and execute queries. 
+## Driver Features
+
+* JDBC driver capable to execute native MongoDb queries, similar with Mongo Shell. 
+
+* The driver is using the native [MongoDb Java driver](https://mongodb.github.io/mongo-java-driver/) to connect and execute queries. 
 Therefore the JDBC URL is the same as [MongoDb URL](https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/connect-to-mongodb/).
 
-The driver returns by default a ResultSet with a single Object. Use **resultSet.getObject(1)** to get this object.
+* The driver returns by default a ResultSet with a single Object. Use **resultSet.getObject(1)** to get this object.
 Adding the parameter 'expand=true' in the URL will create a column in the result set for each key in the result document.
-
 If expand is set the driver will read ahead a number of rows in order to create a correct ResultSetMetaData. This is transparent for the user.
 This because the first document in the result may have less keys as the next records.
 
+* To be able to execute native MongoDb queries we embedded an Rhino JavaScript engine inside the driver.
+ Each time you execute a query we parse and run it as JavaScript with Rhino.
 
-[DbSchema Database Designer](https://dbschema.com) is also calling methods from the JDBC driver DatabaseMetaData.getTables(), getColumns(), etc., to 
+
+* [DbSchema Database Designer](https://dbschema.com) is also calling methods from the JDBC driver DatabaseMetaData.getTables(), getColumns(), etc., to 
 deduce a logical structure of the database. We presume that collections are storing similar documents, so we 'deduce' a virtual schema by 
 scanning random documents from each collection.
 The number of scanned documents can be set in the URL using the parameter scan=<fast|medium|full>.
 
-To be able to execute native MongoDb queries we embedded an Rhino JavaScript engine inside the driver.
-Each time you execute a query we parse and run it as JavaScript with Rhino.
+
+
+
+
 
 [DbSchema Database Designer](https://dbschema.com) is showing the MongoDb structure as diagrams and can execute MongoDb queries.
 Further tools like Random Data Generator for MongoDb, Relational Data Browse and others are available.
@@ -48,7 +54,7 @@ The driver is using the same URL, options and parameters as [native MongoDb Java
 Different is only the 'jdbc:' prefix.
 
 
-## How to use the Driver
+## How to Use the Driver
 
 The driver can be use similar with any other JDBC driver. The resultSet will always receive a single object as document.
 ```
@@ -79,12 +85,15 @@ We are looking forward to improve this and make possible to execute all MongoDb 
 
 The driver implements a PreparedStatement where native MongoDb queries can be passed. Sample: 'db.myCollection.find()'.
 In the MongoPreparedStatement we start a Rhino JavaScript engine, and pass this query to the engine.
-The engine receives also an object 'db':new WrappedMongoDatabase()
+The engine receives also an object 'db':new WrappedMongoDatabase().
+
 The WrappedMongoDatabase is a wrapper around the native MongoDatabase object, with support for Collections as native member variables.
 This  make possible to do ´db.myCollection´ - otherwise it would work only ´db.getCollection('myCollection')´
+
 The collection objects are wrapped as well into WrappedMongoCollection. The reason for this is that most of the methods 
 require Bson objects, and JavaScript will generate only Map objects.
-For example ´db.myCollection.find({'age':12})´ will result in a call of db.myCollection.find(Bson bson) with a Map instead of Bson, which will throw an error.
+
+For example ´´´db.myCollection.find({'age':12})´´´ will result in a call of db.myCollection.find(Bson bson) with a Map instead of Bson, which will throw an error.
 We tried various solutions for avoiding this, including java Proxy. If you know any better solution please let us know, we can improve the project.
 Writing the Wrapper class we added methods which receive Map objects and we take care of the conversion.
 
@@ -92,30 +101,38 @@ In test cases we try to add all possible queries we want to support. If you find
 
 
 
-## DbSchema Main Features for MongoDb
+## How to Test the Driver
 
-* Structure discovery and diagrams 
-* Relational Data Browse and Editor
-* Query Editor
-* Visual Query Builder
-* Random Data Generator
-* Data Loader
+The driver can be tested by simply downloading the [DbSchema Database GUI Tool](https://dbschema.com). The tool can be tested free for 15 days.
  
+DbSchema reads sample JSon documents from the database and deduces a 'logical schema' which is shown as diagrams. 
+Deducing means we consider that each collection documents have similar structure, so we read a bunch of documents from each collection and deduce the schema.
 
-DbSchema reads sample JSon documents from the database and builds diagrams showing the JSon structure. We consider that each collection documents have similar structure.
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-diagram-gui.png)
 
-![mongodb1.png](https://bitbucket.org/repo/BELRaG/images/282491526-mongodb1.png)
+Connecting to MongoDb is simple. You can choose different methods to connect, the host, port, etc.
+The driver is downnloaded automatically by DbSchema from dbschema.com webserver.
 
-Use the Query Editor to edit and execute MongoDb queries in the native language:
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-connection-dialog.png)
 
-![mongodb2.png](https://bitbucket.org/repo/BELRaG/images/2249668125-mongodb2.png)
+The JDBC URL is the same as the native MongoDb Java driver. This can be customized in the second tab.
+
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-connection-custom-url.png)
+
+DbSchema is featuring tools for writing MongoDb queries, in the same way as in the MongoDb Shell:
+
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-query-editor.png)
+
+DbSchema can create **virtual foreign keys** which will be saved to project file.
+This are useful in Relational Data Browse, for easy exploring data from multiple tables.
+
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-virtual-foreign-keys.png)
+
+Relational Data Browse is a tool for visually exploring the database data.
+
+![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-relational-data-browse.png)
 
 
-Using Relational Data Browse you can explore data from multiple collections simultaneously. 
-Collections may bind one with another using virtual relations ( if one field value points to a certain document from another collection ). 
-This is shown as a line between collections ( see here master and slave ). T
-hen data from both collections can be explored. Clicking a document in the first collection will update the second collection with the matching documents.
 
-![mongo3.png](https://bitbucket.org/repo/BELRaG/images/2228714881-mongo3.png)
-
-A full description of DbSchema features is available on [DbSchema website](http://www.dbschema.com/mongodb-tool.html).
+A full description of DbSchema features is available on [DbSchema website](https://dbschema.com/mongodb-tool.html).
+DbSchema can be [downloaded](https://dbschema.com) and tested for free for 15 days.
