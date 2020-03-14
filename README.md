@@ -18,24 +18,11 @@ This because the first document in the result may have less keys as the next rec
  Each time you execute a query we parse and run it as JavaScript with Rhino.
 
 
-* [DbSchema Database Designer](https://dbschema.com) is also calling methods from the JDBC driver DatabaseMetaData.getTables(), getColumns(), etc., to 
+* Calling methods from the DatabaseMetaData.getTables(), getColumns(), etc., the driver will 
 deduce a logical structure of the database. We presume that collections are storing similar documents, so we 'deduce' a virtual schema by 
 scanning random documents from each collection.
 The number of scanned documents can be set in the URL using the parameter scan=<fast|medium|full>.
 
-
-
-
-
-
-[DbSchema Database Designer](https://dbschema.com) is showing the MongoDb structure as diagrams and can execute MongoDb queries.
-Further tools like Random Data Generator for MongoDb, Relational Data Browse and others are available.
-
-The JDBC driver is also capable of finding out 'virtual relations' ( a kind of foriegn keys in MongoDb ). 
-This are ObjectID values in collections which are referring 
-other collections. We return this via DatabaseMetaData.getImportedKeys() and DbSchema is showing them as 'virtual relations'.
-
-DbSchema can be downloaded for free [from dbschema.com](http://dbschema.com/download). The MongoJdbcDriver is automatically included.
 
 ## License
 
@@ -93,12 +80,11 @@ This  make possible to do ´db.myCollection´ - otherwise it would work only ´d
 The collection objects are wrapped as well into WrappedMongoCollection. The reason for this is that most of the methods 
 require Bson objects, and JavaScript will generate only Map objects.
 
-For example ´´´db.myCollection.find({'age':12})´´´ will result in a call of db.myCollection.find(Bson bson) with a Map instead of Bson, which will throw an error.
+For example `db.myCollection.find({'age':12})` will result in a call of db.myCollection.find(Bson bson) with a Map instead of Bson, which will throw an error.
 We tried various solutions for avoiding this, including java Proxy. If you know any better solution please let us know, we can improve the project.
 Writing the Wrapper class we added methods which receive Map objects and we take care of the conversion.
 
 In test cases we try to add all possible queries we want to support. If you find any query which does not work please feel free to commit in the source code or write us.
-
 
 
 ## How to Test the Driver
