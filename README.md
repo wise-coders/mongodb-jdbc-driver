@@ -9,8 +9,8 @@ The driver is written by [DbSchema MongoDb GUI Tool](https://dbschema.com) for e
 * The driver is using the native [MongoDb Java driver](https://mongodb.github.io/mongo-java-driver/) to connect and execute queries. 
 Therefore the JDBC URL is the same as [MongoDb URL](https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/connect-to-mongodb/).
 
-* The driver returns by default a ResultSet with a single Object. Use **resultSet.getObject(1)** to get this object.
-Adding the parameter 'expand=true' in the URL will create a column in the result set for each key in the result document.
+* The driver returns by default a ResultSet with a single Object. Use `resultSet.getObject(1)` to get this object.
+Adding the parameter `expand=true` in the URL will create a column in the result set for each key in the result document.
 If expand is set the driver will read ahead a number of rows in order to create a correct ResultSetMetaData. This is transparent for the user.
 This because the first document in the result may have less keys as the next records.
 
@@ -70,12 +70,12 @@ We are looking forward to improve this and make possible to execute all MongoDb 
 
 ## How it Works
 
-The driver implements a PreparedStatement where native MongoDb queries can be passed. Sample: 'db.myCollection.find()'.
+The driver implements a PreparedStatement where native MongoDb queries can be passed. Sample: `db.myCollection.find()`.
 In the MongoPreparedStatement we start a Rhino JavaScript engine, and pass this query to the engine.
 The engine receives also an object 'db':new WrappedMongoDatabase().
 
 The WrappedMongoDatabase is a wrapper around the native MongoDatabase object, with support for Collections as native member variables.
-This  make possible to do ´db.myCollection´ - otherwise it would work only ´db.getCollection('myCollection')´
+This  make possible to do ´db.myCollection´ - otherwise it would work only `db.getCollection('myCollection')`
 
 The collection objects are wrapped as well into WrappedMongoCollection. The reason for this is that most of the methods 
 require Bson objects, and JavaScript will generate only Map objects.
