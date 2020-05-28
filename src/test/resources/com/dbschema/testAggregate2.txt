@@ -1,0 +1,28 @@
+db.dogroup.drop();
+
+db.dogroup.insert({"_id": 1,"name": "N",course: "C","score": 5,gender: 0})
+
+db.dogroup.insert({"_id": 2,"name": "N",course: "O","score": 4,gender: 0})
+
+db.dogroup.insert({"_id": 3,"name": "A",course: "C","score": 5,gender: 1})
+
+db.dogroup.insert({"_id": 4,"name": "A",course: "O","score": 6,gender: 1})
+
+db.dogroup.insert({"_id": 5,"name": "A",course: "U","score": 8,gender: 1})
+
+db.dogroup.insert({"_id": 6,"name": "A",course: "R","score": 8,gender: 1})
+
+db.dogroup.insert({"_id": 7,"name": "A",course: "S","score": 7,gender: 1})
+
+db.dogroup.insert({"_id": 8,"name": "M",course: "C","score": 4,gender: 0})
+
+db.dogroup.insert({"_id": 9,"name": "M",course: "U","score": 7,gender: 0})
+
+db.dogroup.insert({"_id": 10,"name": "E",course: "C","score": 7,gender: 1})
+
+
+db.dogroup.aggregate([{$group: {_id:"$course",count:{$sum: 1}}},{$match:{count:{$gt: 2}}}]);
+
+db.dogroup.aggregate({$group: {_id:"$course",count:{$sum: 1}}},{$match:{count:{$gt: 2}}});
+
+db.dogroup.aggregate({$group: {_id:"$course",count:{$sum: 1}}});

@@ -37,6 +37,10 @@ public class ResourceScripts extends AbstractTestCase {
         executeFile("testAggregate.txt");
     }
     @Test
+    public void aggregate2() throws IOException, SQLException {
+        executeFile("testAggregate2.txt");
+    }
+    @Test
     public void inventory() throws IOException, SQLException {
         executeFile("inventory.txt");
     }

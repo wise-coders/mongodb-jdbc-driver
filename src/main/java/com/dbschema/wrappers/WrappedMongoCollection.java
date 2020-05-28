@@ -14,6 +14,7 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -243,10 +244,40 @@ public class WrappedMongoCollection<TDocument> {
         return new WrappedFindIterable( mongoCollection.find( clientSession, toBson(filter), aClass ));
     }
 
-
     public AggregateIterable aggregate(List pipeline) {
-        return mongoCollection.aggregate( toBsonList(pipeline) );
+        return mongoCollection.aggregate(toBsonList(pipeline));
     }
+
+    public AggregateIterable aggregate(Object object) {
+        List list = new ArrayList();
+        list.add( toBson(object) );
+        return mongoCollection.aggregate(list);
+    }
+
+    public AggregateIterable aggregate(Object obj1, Object obj2) {
+        List list = new ArrayList();
+        list.add( toBson(obj1) );
+        list.add( toBson(obj2));
+        return mongoCollection.aggregate(list);
+    }
+
+    public AggregateIterable aggregate(Object obj1, Object obj2, Object obj3) {
+        List list = new ArrayList();
+        list.add( toBson(obj1) );
+        list.add( toBson(obj2));
+        list.add( toBson(obj3));
+        return mongoCollection.aggregate(list);
+    }
+
+    public AggregateIterable aggregate(Object obj1, Object obj2, Object obj3, Object obj4) {
+        List list = new ArrayList();
+        list.add( toBson(obj1) );
+        list.add( toBson(obj2));
+        list.add( toBson(obj3));
+        list.add( toBson(obj4));
+        return mongoCollection.aggregate(list);
+    }
+
 
 
     public AggregateIterable aggregate(List pipeline, Class aClass) {
