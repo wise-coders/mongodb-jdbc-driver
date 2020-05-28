@@ -244,6 +244,51 @@ public class WrappedMongoCollection<TDocument> {
         return new WrappedFindIterable( mongoCollection.find( clientSession, toBson(filter), aClass ));
     }
 
+    //
+
+    public TDocument findOne() {
+        return new WrappedFindIterable<>(mongoCollection.find()).first();
+    }
+
+
+    public TDocument findOne(Class aClass) {
+        return new WrappedFindIterable<TDocument>(mongoCollection.find( aClass )).first();
+    }
+
+
+    public TDocument findOne(Map filter) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find(toBson(filter))).first();
+    }
+
+    public TDocument findOne(Map filter, Map projection) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find(toBson(filter)).projection( toBson(projection) )).first();
+    }
+
+
+    public TDocument findOne(Map filter, Class aClass) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find( toBson(filter), aClass)).first();
+    }
+
+
+    public TDocument findOne(ClientSession clientSession) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find(clientSession)).first();
+    }
+
+
+    public TDocument findOne(ClientSession clientSession, Class aClass) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find( clientSession, aClass )).first();
+    }
+
+
+    public TDocument findOne(ClientSession clientSession, Map filter) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find( clientSession, toBson(filter) )).first();
+    }
+
+
+    public TDocument findOne(ClientSession clientSession, Map filter, Class aClass) {
+        return new WrappedFindIterable<TDocument>( mongoCollection.find( clientSession, toBson(filter), aClass )).first();
+    }
+
     public AggregateIterable aggregate(List pipeline) {
         return mongoCollection.aggregate(toBsonList(pipeline));
     }
@@ -733,6 +778,14 @@ public class WrappedMongoCollection<TDocument> {
 
     public List<String> createIndexes(ClientSession clientSession, List indexes, CreateIndexOptions createIndexOptions) {
         return null;
+    }
+
+    public ListIndexesIterable<Document> getIndexes(){
+        return mongoCollection.listIndexes();
+    }
+
+    public Document getIndexSpecs(){
+        return mongoCollection.listIndexes().first();
     }
 
 

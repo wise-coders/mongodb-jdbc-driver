@@ -26,3 +26,7 @@ db.dogroup.aggregate([{$group: {_id:"$course",count:{$sum: 1}}},{$match:{count:{
 db.dogroup.aggregate({$group: {_id:"$course",count:{$sum: 1}}},{$match:{count:{$gt: 2}}});
 
 db.dogroup.aggregate({$group: {_id:"$course",count:{$sum: 1}}});
+
+db.dogroup.findOne({"score":8})
+
+db.dogroup.getIndexes()
