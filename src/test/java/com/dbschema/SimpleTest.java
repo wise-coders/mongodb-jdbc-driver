@@ -51,7 +51,7 @@ public class SimpleTest extends AbstractTestCase{
     @Test
     public void testFindAnd() throws Exception {
         Statement stmt=con.createStatement();
-        printResultSet( stmt.executeQuery("local.saple.find({ $and: [ {'name':'DbSchema Free Version'}, {'name':'DbSchema Free Version'} ] } )") );
+        printResultSet( stmt.executeQuery("local.sample.find({ $and: [ {'name':'DbSchema Free Version'}, {'name':'DbSchema Free Version'} ] } )") );
         stmt.close();
     }
 
@@ -86,6 +86,13 @@ public class SimpleTest extends AbstractTestCase{
     public void testInsert() throws Exception {
         Statement stmt=con.createStatement();
         printResultSet( stmt.executeQuery("local.sample2.insert({ 'firstname' : 'Anna', 'lastname' : 'Pruteanu' })") );
+        stmt.close();
+    }
+
+    @Test
+    public void testISODate() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.sample2.insert({'shopId':'baaacd90d36e11e9adb40a8baad32c5a','date':ISODate('2019-12-25T07:23:18.408Z')})") );
         stmt.close();
     }
 

@@ -154,7 +154,18 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
             binding.put("client", con);
             final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-                    "var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
+                    "var ISODate = function( str ) { " +
+                    "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
+                    "\n" +
+                    "for (i = 0; i < formats.length; i++)  {\n" +
+                    "    try {\n" +
+                    "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
+                    "    } catch (error) { }\n" +
+                    "}\n" +
+                    "throw new java.text.ParseException(\"Un-parsable date: \" + str + \" Configured formats: \" + formats, 0);" +
+                    "return null;" +
+                    "}";
+                    //"var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
             engine.eval(script);
             Object obj = engine.eval(query);
             if ( obj instanceof Iterable){
