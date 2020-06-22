@@ -103,6 +103,13 @@ public class SimpleTest extends AbstractTestCase{
         stmt.close();
     }
 
+    @Test
+    public void testOID() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("db.test.insert({\"_id\":ObjectId(\"5e95cfecdfa8c111a4b2a53a\"), \"name\":\"first\"})"));
+        stmt.close();
+    }
+
     private static final String[] aggregateScript = new String[]{
             "db.foodCool.drop();",
             "db.foodColl.insert([\n"+
