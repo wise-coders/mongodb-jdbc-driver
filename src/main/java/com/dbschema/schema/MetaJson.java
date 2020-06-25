@@ -1,6 +1,5 @@
 package com.dbschema.schema;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,14 +8,13 @@ import java.util.List;
  */
 public class MetaJson extends MetaField {
 
-    static final int TYPE_MAP = 4999544;
-    static final int TYPE_LIST = 4999545;
-    static final int TYPE_ARRAY = Types.ARRAY;
+    static final int TYPE_OBJECT = 4999544;
+    static final int TYPE_ARRAY = 4999545;
 
     public final List<MetaField> fields = new ArrayList<MetaField>();
 
     MetaJson(MetaJson parentJson, String name, int type ){
-        super( parentJson, name, ( type == TYPE_LIST ? "list" : "map" ), type );
+        super( parentJson, name, ( type == TYPE_ARRAY ? "array" : "object" ), type );
     }
 
     MetaField createField(String name, String typeName, int type, boolean mandatoryIfNew ){
@@ -29,21 +27,21 @@ public class MetaJson extends MetaField {
         return field;
     }
 
-    MetaJson createJsonMapField(String name, boolean mandatoryIfNew){
+    MetaJson createJsonObjectField(String name, boolean mandatoryIfNew){
         for ( MetaField field : fields){
             if ( field instanceof MetaJson && field.name.equals( name )) return (MetaJson)field;
         }
-        MetaJson json = new MetaJson( this, name, TYPE_MAP);
+        MetaJson json = new MetaJson( this, name, TYPE_OBJECT);
         fields.add( json );
         json.setMandatory( mandatoryIfNew );
         return json;
     }
 
-    MetaJson createJsonListField(String name, boolean mandatoryIfNew){
+    MetaJson createJsonArrayField(String name, boolean mandatoryIfNew){
         for ( MetaField field : fields){
             if ( field instanceof MetaJson && field.name.equals( name )) return (MetaJson)field;
         }
-        MetaJson json = new MetaJson( this, name, TYPE_LIST);
+        MetaJson json = new MetaJson( this, name, TYPE_ARRAY);
         json.setMandatory( mandatoryIfNew);
         fields.add( json );
         return json;
@@ -75,6 +73,10 @@ public class MetaJson extends MetaField {
             }
         }
         return null;
+    }
+
+    public void setTypeArray(){
+
     }
 
 }

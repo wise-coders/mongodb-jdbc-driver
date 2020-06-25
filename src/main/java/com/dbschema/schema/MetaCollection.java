@@ -25,7 +25,7 @@ public class MetaCollection extends MetaJson {
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
 
     public MetaCollection(final WrappedMongoCollection mongoCollection, final String db, final String name, final ScanStrategy strategy ){
-        super( null, name, TYPE_MAP);
+        super( null, name, TYPE_OBJECT);
         this.db = db;
 
         switch ( strategy ){
@@ -88,18 +88,21 @@ public class MetaCollection extends MetaJson {
                     Map subMap = (Map)value;
                     // "suburbs":[ { name: "Scarsdale" }, { name: "North Hills" } ] WOULD GENERATE SUB-ENTITIES 0,1,2,... FOR EACH LIST ENTRY. SKIP THIS
                     if ( allKeysAreNumbers( subMap )){
-                        final MetaJson childrenMap = parentMap.createJsonMapField(key.toString(), isFirstDiscover );
+                        final MetaJson childrenMap = parentMap.createJsonArrayField(key.toString(), isFirstDiscover );
                         for ( Object subKey : subMap.keySet() ) {
                             discoverMap(childrenMap, subMap.get( subKey ));
                         }
                     } else {
-                        final MetaJson childrenMap = parentMap.createJsonMapField(key.toString(), isFirstDiscover );
+                        final MetaJson childrenMap = parentMap.createJsonObjectField(key.toString(), isFirstDiscover );
+                        if ( subMap.size() > 1 ){
+                            childrenMap.setTypeArray();
+                        }
                         discoverMap(childrenMap, value);
                     }
                 } else if ( value instanceof List ){
                     final List list = (List)value;
                     if ( (list.isEmpty() || isListOfDocuments(value))  ) {
-                        final MetaJson subDocument = parentMap.createJsonListField(key.toString(), isFirstDiscover );
+                        final MetaJson subDocument = parentMap.createJsonArrayField(key.toString(), isFirstDiscover );
                         for ( Object child : (List)value ){
                             discoverMap(subDocument, child);
                         }

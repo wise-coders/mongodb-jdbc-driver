@@ -28,6 +28,7 @@ public class ReverseEngineer extends AbstractTestCase {
 
     @Test
     public void testIndex() throws SQLException {
-        con.getMetaData().getIndexInfo("local", "local", "words", false, false );
+        con.getMetaData().getColumns("sample4", "sample4", "airports", null);
+        con.getMetaData().getIndexInfo("sample4", "sample4", "words", false, false );
     }
 }
