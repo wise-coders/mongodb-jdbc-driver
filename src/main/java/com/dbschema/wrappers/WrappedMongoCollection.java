@@ -522,8 +522,8 @@ public class WrappedMongoCollection<TDocument> {
     }
 
 
-    public UpdateResult replaceOne(Bson filter, Object replacement, UpdateOptions updateOptions) {
-        return null;
+    public UpdateResult replaceOne(Bson filter, Map replacement, ReplaceOptions updateOptions) {
+        return mongoCollection.replaceOne( toBson(filter), toDocument(replacement), updateOptions );
     }
 
 
