@@ -28,7 +28,7 @@ public class WrappedMongoClient {
 
     private final MongoClient mongoClient;
     private final String databaseName;
-    private String uri;
+    private final String uri;
     private final HashMap<String, MetaCollection> metaCollections = new HashMap<String,MetaCollection>();
     private final ScanStrategy scanStrategy;
     public final boolean expandResultSet;
@@ -68,6 +68,10 @@ public class WrappedMongoClient {
             if ( System.currentTimeMillis() - start > 8000 ) pingStatus = PingStatus.TIMEOUT;
         }
         return pingStatus;
+    }
+
+    public void close(){
+        mongoClient.close();
     }
 
     public MongoClientOptions getMongoClientOptions() {

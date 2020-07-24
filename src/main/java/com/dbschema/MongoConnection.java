@@ -116,15 +116,15 @@ public class MongoConnection implements Connection
 	}
 
     @Override
-	public void close() throws SQLException	{
+	public void close() {
+    	client.close();
 		isClosed = true;
 	}
 
     @Override
-	public boolean isClosed() throws SQLException {
+	public boolean isClosed() {
 		return isClosed;
 	}
-
 
     private final MongoDatabaseMetaData metaData = new MongoDatabaseMetaData(this);
 

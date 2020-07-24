@@ -20,7 +20,7 @@ repositories {
 
 
 dependencies {
-    compile "org.mongodb:mongo-java-driver:3.12.4"
+    compile "org.mongodb:mongo-java-driver:3.12.6"
     //compile "org.mozilla:rhino:1.7.11"
     //compile "org.graalvm.js:js-scriptengine:19.2.1"
     //compile "org.graalvm.js:js:19.2.1"
