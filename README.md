@@ -1,4 +1,4 @@
-# Open Source MongoDb JDBC Driver
+# MongoDb JDBC Driver | DbSchema MongoDB Designer
 
 The driver is written by [DbSchema - MongoDb Diagram Designer](https://dbschema.com/mongodb-tool.html) for everybody how needs an MongoDb JDBC driver. 
 
