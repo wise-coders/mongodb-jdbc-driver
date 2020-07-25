@@ -1,6 +1,6 @@
 # Open Source MongoDb JDBC Driver
 
-The driver is written by [DbSchema MongoDb GUI Tool](https://dbschema.com) for everybody how needs an MongoDb JDBC driver. 
+The driver is written by [DbSchema - MongoDb Diagram Designer](https://dbschema.com/mongodb-tool.html) for everybody how needs an MongoDb JDBC driver. 
 
 ## Driver Features
 
@@ -89,36 +89,36 @@ In test cases we try to add all possible queries we want to support. If you find
 
 ## How to Test the Driver
 
-The driver can be tested by simply downloading the [DbSchema Database GUI Tool](https://dbschema.com). The tool can be tested free for 15 days.
+The driver can be tested by simply downloading the [DbSchema - MongoDB Diagram Designer](https://dbschema.com/mongodb-tool.html). The tool can be tested free for 15 days.
  
 DbSchema reads sample JSon documents from the database and deduces a 'logical schema' which is shown as diagrams. 
 Deducing means we consider that each collection documents have similar structure, so we read a bunch of documents from each collection and deduce the schema.
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-diagram-gui.png)
+![MongoDb Designer with Diagrams of the Database Structure](resources/images/dbschema-mongodb-diagram-gui.png)
 
 Connecting to MongoDb is simple. You can choose different methods to connect, the host, port, etc.
 The driver is downnloaded automatically by DbSchema from dbschema.com webserver.
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-connection-dialog.png)
+![DbSchema Connection Dialog to MongoDB](resources/images/dbschema-mongodb-connection-dialog.png)
 
 The JDBC URL is the same as the native MongoDb Java driver. This can be customized in the second tab.
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-connection-custom-url.png)
+![DbSchema connect using JDBC URL](resources/images/dbschema-mongodb-connection-custom-url.png)
 
 DbSchema is featuring tools for writing MongoDb queries, in the same way as in the MongoDb Shell:
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-query-editor.png)
+![Visual Query Editor for MongoDB](resources/images/dbschema-mongodb-query-editor.png)
 
 DbSchema can create **virtual foreign keys** which will be saved to project file.
 This are useful in Relational Data Browse, for easy exploring data from multiple tables.
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-virtual-foreign-keys.png)
+![Virtual Foreign keys for MongoDB](resources/images/dbschema-mongodb-virtual-foreign-keys.png)
 
 Relational Data Browse is a tool for visually exploring the database data.
 
-![MongoDb Diagram GUI Tool](resources/images/dbschema-mongodb-relational-data-browse.png)
+![MongoDB Data Explorer adn Editor](resources/images/dbschema-mongodb-relational-data-browse.png)
 
 
 
-A full description of DbSchema features is available on [DbSchema website](https://dbschema.com/mongodb-tool.html).
+A full description of DbSchema features is available on [DbSchema MongoDB Designer Website](https://dbschema.com/mongodb-tool.html).
 DbSchema can be [downloaded](https://dbschema.com) and tested for free for 15 days.
