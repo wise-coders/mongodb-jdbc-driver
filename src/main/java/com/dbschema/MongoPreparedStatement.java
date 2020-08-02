@@ -273,7 +273,6 @@ public class MongoPreparedStatement implements PreparedStatement {
 
     @Override
     public int executeUpdate( String sql) throws SQLException	{
-        System.out.println("--HERE - execute update");
         if ( sql != null ) {
             if ( documentParam == null ){
                 // IF HAS NO PARAMETERS, EXECUTE AS NORMAL SQL
@@ -284,13 +283,10 @@ public class MongoPreparedStatement implements PreparedStatement {
                 Matcher matcher = PATTERN_UPDATE.matcher( sql );
                 final Object id = documentParam.get("_id");
                 if ( matcher.matches() ){
-                    System.out.println("--HERE - is update");
                     WrappedMongoCollection collection = getCollectionMandatory(matcher.group(1), true);
                     if (id == null) {
-                        System.out.println("--HERE - update insert one. " + documentParam);
                         collection.insertOne(documentParam);
                     } else {
-                        System.out.println("--HERE - update replace one. " + documentParam);
                         collection.replaceOne( new Document("_id", id), documentParam, new ReplaceOptions().upsert(true));
                     }
                     return 1;

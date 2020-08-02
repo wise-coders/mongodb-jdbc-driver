@@ -1,5 +1,6 @@
 package com.dbschema.wrappers;
 
+import com.dbschema.Util;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -34,7 +35,7 @@ public class WrappedMongoCollection<TDocument> {
 
 
     private TDocument toDocument( Map map ){
-        return (TDocument)( new Document( map ));
+        return (TDocument)( new Document( Util.doMapConversions(map) ));
     }
 
     @Override
@@ -450,7 +451,7 @@ public class WrappedMongoCollection<TDocument> {
     }
 
     public void insert(Map o) {
-        mongoCollection.insertOne( (TDocument)( new Document( o )));
+        mongoCollection.insertOne( toDocument(o));
     }
 
     public void insert(List<Map> list) {

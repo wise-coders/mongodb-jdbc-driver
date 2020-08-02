@@ -19,7 +19,7 @@ public class Util {
         }
     }
 
-    private static Map doMapConversions(Map map){
+    public static Map doMapConversions(Map map){
         for (Object key : map.keySet()){
             Object value = map.get( key );
             if ( value instanceof Map ){

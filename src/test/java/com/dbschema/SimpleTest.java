@@ -47,7 +47,28 @@ public class SimpleTest extends AbstractTestCase{
         printResultSet( stmt.executeQuery("local.products.find()") );
         stmt.close();
     }
-
+    @Test
+    public void testInsert2() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("" +
+                "local.cities3.drop();" +
+                "local.cities3.insert(\n" +
+                "{ \"country_id\" : \"USA\", \n" +
+                "    \"city_name\" : \"San Francisco\", \n" +
+                "    \"brother_cities\" : [\n" +
+                "        \"Urban\", \"Paris\"\n" +
+                "    ], \n" +
+                "    \"suburbs\" : [\n" +
+                "         {\n" +
+                "            \"name\" : \"Scarsdale\"\n" +
+                "         }, \n" +
+                "        {\n" +
+                "            \"name\" : \"North Hills\"\n" +
+                "        } ]\n" +
+                "    })") );
+        con.commit();
+        stmt.close();
+    }
     @Test
     public void testFindAnd() throws Exception {
         Statement stmt=con.createStatement();
