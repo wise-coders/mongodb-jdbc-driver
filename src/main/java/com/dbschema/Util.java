@@ -3,6 +3,7 @@ package com.dbschema;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,9 @@ public class Util {
             }
             if ( value instanceof Map && canConvertMapToArray( (Map)value )){
                 map.put( key, convertMapToArray((Map) value));
+            }
+            if ( "_id".equals(key) && value instanceof String ){
+                map.put( "_id", new ObjectId((String)value));
             }
         }
         return map;

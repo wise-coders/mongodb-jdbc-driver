@@ -99,7 +99,7 @@ public class SimpleTest extends AbstractTestCase{
         printResultSet( new ResultSetIterator(((MongoConnection)con).client.getDatabase("local").getCollection("products").find( query), true));
 */
         Statement stmt=con.createStatement();
-        printResultSet( stmt.executeQuery("local.products.find({'_id':ObjectId('5dd593595f94074908de3db9')})" ) );
+        printResultSet( stmt.executeQuery("local.products.find({_id:'5f3291806abad86535411518'})" ) );
         stmt.close();
     }
 

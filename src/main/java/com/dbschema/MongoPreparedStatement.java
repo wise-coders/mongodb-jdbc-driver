@@ -27,14 +27,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/*
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Value;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-*/
+
 
 /**
  * Implementation of the prepared statements. Can execute any native MongoDb queries and a bunch of 'show..' commands
@@ -858,6 +851,13 @@ public class MongoPreparedStatement implements PreparedStatement {
 
 
 /* ****************  RHINO
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.RhinoException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 
             Context cx = Context.enter();
