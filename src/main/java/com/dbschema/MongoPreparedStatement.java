@@ -70,7 +70,7 @@ public class MongoPreparedStatement implements PreparedStatement {
     private static final Pattern PATTERN_SHOW_COLLECTIONS = Pattern.compile("SHOW\\s+COLLECTIONS\\s*", Pattern.CASE_INSENSITIVE );
     private static final Pattern PATTERN_SHOW_USERS = Pattern.compile("SHOW\\s+USERS\\s*", Pattern.CASE_INSENSITIVE );
     private static final Pattern PATTERN_SHOW_RULES = Pattern.compile("SHOW\\s+RULES\\s*", Pattern.CASE_INSENSITIVE );
-    private static final Pattern PATTERN_SHOW_PROFILE = Pattern.compile("SHOW\\s+PROFILE\\s*", Pattern.CASE_INSENSITIVE );
+    private static final Pattern PATTERN_SHOW_PROFILES = Pattern.compile("SHOW\\s+PROFILES\\s*", Pattern.CASE_INSENSITIVE );
 
     @Override
     public ResultSet executeQuery(String query) throws SQLException	{
@@ -105,22 +105,20 @@ public class MongoPreparedStatement implements PreparedStatement {
                     result.addRow( new String[]{ str });
                 }
                 return lastResultSet = result;
-            }
-            if ( PATTERN_SHOW_COLLECTIONS.matcher( query ).matches()){
+            } else if ( PATTERN_SHOW_COLLECTIONS.matcher( query ).matches()){
                 ArrayResultSet result = new ArrayResultSet();
                 result.setColumnNames(new String[]{"COLLECTION_NAME"});
                 for ( String str : con.client.getCollectionNames(con.getCatalog()) ){
                     result.addRow( new String[]{ str });
                 }
                 return lastResultSet = result;
-            }
-            if ( PATTERN_SHOW_USERS.matcher( query ).matches()){
+            } else if ( PATTERN_SHOW_USERS.matcher( query ).matches()){
                 query = "db.runCommand(\"{usersInfo:'" + con.getCatalog() + "'}\")";
-            }
-            if ( PATTERN_SHOW_PROFILE.matcher( query ).matches() || PATTERN_SHOW_RULES.matcher( query ).matches() ){
+            } else if ( PATTERN_SHOW_PROFILES.matcher( query ).matches() || PATTERN_SHOW_RULES.matcher( query ).matches() ){
                 throw new SQLException("Not yet implemented in this driver.");
+            } else {
+                throw new SQLException("Invalid command : " + query);
             }
-            throw new SQLException("Invalid command : " + query );
         }
         try {
 

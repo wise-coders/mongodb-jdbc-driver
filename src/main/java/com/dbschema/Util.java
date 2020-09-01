@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Util {
 
@@ -20,6 +21,8 @@ public class Util {
         }
     }
 
+    private static final Pattern HEXADECIMAL_PATTERN = Pattern.compile("\\p{XDigit}+");
+
     public static Map doMapConversions(Map map){
         for (Object key : map.keySet()){
             Object value = map.get( key );
@@ -29,7 +32,7 @@ public class Util {
             if ( value instanceof Map && canConvertMapToArray( (Map)value )){
                 map.put( key, convertMapToArray((Map) value));
             }
-            if ( "_id".equals(key) && value instanceof String ){
+            if ( "_id".equals(key) && value instanceof String && HEXADECIMAL_PATTERN.matcher((String)value).matches() ){
                 map.put( "_id", new ObjectId((String)value));
             }
         }
