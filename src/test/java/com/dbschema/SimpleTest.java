@@ -40,6 +40,12 @@ public class SimpleTest extends AbstractTestCase{
             System.out.println(dbName);
         }
     }
+    @Test
+    public void testGetViewSource() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.getViewSource('orderView')") );
+        stmt.close();
+    }
 
     @Test
     public void testFind() throws Exception {

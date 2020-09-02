@@ -20,13 +20,15 @@ import java.util.regex.Pattern;
 public class MetaCollection extends MetaJson {
 
     private boolean isFirstDiscover = true;
+    public boolean referencesDiscovered = false;
 
-    public final String db;
+
+    public final MetaDatabase metaDatabase;
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
 
-    public MetaCollection(final WrappedMongoCollection mongoCollection, final String db, final String name, final ScanStrategy strategy ){
+    public MetaCollection(final WrappedMongoCollection mongoCollection, final MetaDatabase metaDatabase, final String name, final ScanStrategy strategy ){
         super( null, name, TYPE_OBJECT);
-        this.db = db;
+        this.metaDatabase = metaDatabase;
 
         switch ( strategy ){
             case medium:
@@ -189,7 +191,5 @@ public class MetaCollection extends MetaJson {
             System.out.println("Error in discover indexes " + dbCollection + "." + this + ". " + ex );
         }
     }
-
-
 
 }

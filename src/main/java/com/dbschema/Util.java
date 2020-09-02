@@ -57,15 +57,23 @@ public class Util {
     }
 
 
-    public static List toBsonList(List list ){
-        if ( list != null ){
+    public static List toBsonList(Object source ){
+        if ( source instanceof Map && canConvertMapToArray((Map)source)){
+            Map sourceMap = (Map)source;
+            ArrayList array = new ArrayList();
+            for ( int i = 0; i < sourceMap.size(); i++ ){
+                array.add( toBson(sourceMap.get("" + i)));
+            }
+            return array;
+        }
+        if ( source instanceof List ){
             ArrayList<Object> ret = new ArrayList<>();
-            for ( Object obj : list ) {
+            for ( Object obj : (List)source ) {
                 ret.add( toBson( obj ));
             }
             return ret;
         }
-        return list;
+        return null;
     }
 
 }

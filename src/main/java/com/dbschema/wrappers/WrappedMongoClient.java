@@ -2,6 +2,7 @@ package com.dbschema.wrappers;
 
 import com.dbschema.ScanStrategy;
 import com.dbschema.schema.MetaCollection;
+import com.dbschema.schema.MetaDatabase;
 import com.dbschema.schema.MetaField;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -29,7 +30,7 @@ public class WrappedMongoClient {
     private final MongoClient mongoClient;
     private final String databaseName;
     private final String uri;
-    private final HashMap<String, MetaCollection> metaCollections = new HashMap<String,MetaCollection>();
+    private final HashMap<String, MetaDatabase> metaDatabases = new HashMap<>();
     private final ScanStrategy scanStrategy;
     public final boolean expandResultSet;
     public enum PingStatus{ INIT, SUCCEED, FAILED, TIMEOUT }
@@ -59,6 +60,7 @@ public class WrappedMongoClient {
         this.uri = uri;
         this.expandResultSet = expandResultSet;
         this.scanStrategy = scanStrategy;
+        getDatabaseNames();
     }
 
     public PingStatus pingServer(){
@@ -112,6 +114,9 @@ public class WrappedMongoClient {
         try {
             // THIS OFTEN THROWS EXCEPTION BECAUSE OF MISSING RIGHTS. IN THIS CASE WE ONLY ADD CURRENT KNOWN DB.
             for ( String c : listDatabaseNames() ){
+                if( !metaDatabases.containsKey(c ) ){
+                    metaDatabases.put( c, new MetaDatabase(c ));
+                }
                 names.add( c );
             }
         } catch ( Throwable ex ){
@@ -138,14 +143,17 @@ public class WrappedMongoClient {
         return list;
     }
 
-    public Collection<MetaCollection> getMetaCollections(){
-        return metaCollections.values();
+    public Collection<MetaDatabase> getMetaDatabases(){
+        return metaDatabases.values();
+    }
+
+    public MetaDatabase getMetaDatabase( String name ){
+        return metaDatabases.get( name );
     }
 
 
     public void clear() {
-        metaCollections.clear();
-        referencesDiscovered = false;
+        metaDatabases.clear();
     }
 
 
@@ -159,15 +167,15 @@ public class WrappedMongoClient {
         int idx = collectionName.indexOf('.');
         if ( idx > -1 ) collectionName = collectionName.substring(0, idx );
 
-        String key = catalogName + "." + collectionName;
-        MetaCollection metaCollection = metaCollections.get( key );
-        if ( metaCollection == null ){
-            metaCollection = discoverCollection( catalogName, collectionName );
-            if ( metaCollection != null ){
-                metaCollections.put( key, metaCollection );
+        MetaDatabase metaDatabase = metaDatabases.get( catalogName );
+        if ( metaDatabase != null ) {
+            MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
+            if (metaCollection == null) {
+                metaCollection = discoverCollection(metaDatabase, collectionName);
             }
+            return metaCollection;
         }
-        return metaCollection;
+        return null;
 
     }
 
@@ -181,12 +189,15 @@ public class WrappedMongoClient {
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
             if ( db != null ){
-                for ( String str : db.listCollectionNames() ){
-                    list.add( str );
+                for ( Document doc : db.listCollections()){
+                    if ( doc.containsKey("type") && "collection".equals(doc.get("type"))){
+                        list.add( String.valueOf( doc.get("name")) );
+                    }
                 }
             }
             list.remove("system.indexes");
             list.remove("system.users");
+            list.remove("system.views");
             list.remove("system.version");
         } catch ( Throwable ex ){
             LOGGER.log(Level.SEVERE, "Cannot list collection names for " + databaseName + ". ", ex );
@@ -194,25 +205,42 @@ public class WrappedMongoClient {
         return list;
     }
 
+    public List<String> getViewNames(String databaseName) {
+        List<String> list = new ArrayList<String>();
+        try {
+            WrappedMongoDatabase db = getDatabase(databaseName);
+            if ( db != null ){
+                for ( Document doc : db.listCollections()){
+                    if ( doc.containsKey("type") && "view".equals(doc.get("type"))){
+                        list.add( String.valueOf( doc.get("name")) );
+                    }
+                }
+            }
+        } catch ( Throwable ex ){
+            LOGGER.log(Level.SEVERE, "Cannot list collection names for " + databaseName + ". ", ex );
+        }
+        return list;
+    }
 
-    private MetaCollection discoverCollection(String dbOrCatalog, String collectionName){
-        final WrappedMongoDatabase mongoDatabase = getDatabase(dbOrCatalog);
+
+    private MetaCollection discoverCollection(MetaDatabase metaDatabase, String collectionName){
+        final WrappedMongoDatabase mongoDatabase = getDatabase(metaDatabase.name);
         if ( mongoDatabase != null ){
             try {
                 final WrappedMongoCollection mongoCollection = mongoDatabase.getCollection( collectionName );
                 if ( mongoCollection != null ){
-                    return new MetaCollection( mongoCollection, dbOrCatalog, collectionName, scanStrategy );
+                    return metaDatabase.createCollection( mongoCollection, collectionName, scanStrategy );
                 }
             } catch ( Throwable ex ){
-                LOGGER.log(Level.SEVERE, "Error discovering collection " + dbOrCatalog + "." + collectionName + ". ", ex );
+                LOGGER.log(Level.SEVERE, "Error discovering collection " + metaDatabase + "." + collectionName + ". ", ex );
             }
         }
         return null;
     }
 
 
-    private WrappedMongoCollection getWrappedMongoCollection(String databaseName, String collectionName ){
-        final WrappedMongoDatabase mongoDatabase = getDatabase( databaseName );
+    private WrappedMongoCollection getWrappedMongoCollection(MetaDatabase metaDatabase, String collectionName ){
+        final WrappedMongoDatabase mongoDatabase = getDatabase( metaDatabase.name );
         if ( mongoDatabase != null ){
             return mongoDatabase.getCollection( collectionName );
         }
@@ -220,36 +248,32 @@ public class WrappedMongoClient {
     }
 
 
-    private boolean referencesDiscovered = false;
 
-    public void discoverReferences(){
-        if ( !referencesDiscovered){
+    public void discoverReferences(MetaCollection master ){
+        if ( !master.referencesDiscovered){
             try {
-                referencesDiscovered = true;
+                master.referencesDiscovered = true;
                 final List<MetaField> unsolvedFields = new ArrayList<>();
                 final List<MetaField> solvedFields = new ArrayList<>();
-                for ( MetaCollection collection : metaCollections.values() ){
-                    collection.collectFieldsWithObjectId(unsolvedFields);
-                }
+                master.collectFieldsWithObjectId(unsolvedFields);
                 if ( !unsolvedFields.isEmpty() ){
-                    for ( MetaCollection collection : metaCollections.values() ){
-                        final WrappedMongoCollection mongoCollection = getWrappedMongoCollection( collection.db, collection.name );
+                    for ( MetaCollection _metaCollection : master.metaDatabase.getMetaCollections() ){
+                        final WrappedMongoCollection mongoCollection = getWrappedMongoCollection( _metaCollection.metaDatabase, _metaCollection.name );
                         if ( mongoCollection != null ){
                             for ( MetaField metaField : unsolvedFields ){
                                 for ( ObjectId objectId : metaField.objectIds){
                                     final Document query = new Document(); //new BasicDBObject();
-                                    query.put("_id", objectId );
-                                    if ( !solvedFields.contains( metaField ) && mongoCollection.find( query ).iterator().hasNext() ){
+                                    query.put("_id", objectId);
+                                    if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
                                         solvedFields.add( metaField );
-                                        metaField.createReferenceTo(collection);
-                                        System.out.println("Found ref " + metaField.parentJson.name + " ( " + metaField.name + " ) ref " + collection.name );
+                                        metaField.createReferenceTo(_metaCollection);
+                                        System.out.println("Found ref " + metaField.parentJson.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             } catch ( Throwable ex ){
                 LOGGER.log( Level.SEVERE, "Error in discover foreign keys", ex );
             }

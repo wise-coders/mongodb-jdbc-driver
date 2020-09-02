@@ -65,24 +65,30 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         if ( catalogName == null ){
             for ( String cat : con.client.getDatabaseNames() ) {
                 for (String tableName : con.client.getCollectionNames( cat ) ) {
-                    resultSet.addRow( createTableRow( catalogName, tableName) );
+                    resultSet.addRow( createTableRow( catalogName, tableName, "TABLE") );
+                }
+                for (String tableName : con.client.getViewNames( cat ) ) {
+                    resultSet.addRow( createTableRow( catalogName, tableName, "VIEW") );
                 }
             }
         } else {
             for (String tableName : con.client.getCollectionNames( catalogName ) ) {
-                resultSet.addRow( createTableRow( catalogName, tableName) );
+                resultSet.addRow( createTableRow( catalogName, tableName, "TABLE") );
+            }
+            for (String tableName : con.client.getViewNames( catalogName ) ) {
+                resultSet.addRow( createTableRow( catalogName, tableName, "VIEW") );
             }
         }
         return resultSet;
 
     }
 
-    private String[] createTableRow( String catalogName, String tableName ){
+    private String[] createTableRow( String catalogName, String tableName, String type ){
         String[] data = new String[10];
         data[0] = catalogName; // TABLE_CAT
         data[1] = ""; // TABLE_SCHEM
         data[2] = tableName; // TABLE_NAME
-        data[3] = "TABLE"; // TABLE_TYPE
+        data[3] = type; // TABLE_TYPE
         data[4] = ""; // REMARKS
         data[5] = ""; // TYPE_CAT
         data[6] = ""; // TYPE_SCHEM
@@ -1229,18 +1235,19 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
 
     @Override
     public ResultSet getExportedKeys(String catalogName, String schemaName, String tableNamePattern) throws SQLException {
-        con.client.discoverReferences();
-
-
         ArrayResultSet result = new ArrayResultSet();
         result.setColumnNames(new String[]{"PKTABLE_CAT", "PKTABLE_SCHEMA", "PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT", "FKTABLE_SCHEM",
                 "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"});
 
         MetaCollection pkCollection = con.client.getMetaCollection(catalogName, tableNamePattern);
         if ( pkCollection != null ){
-            for ( MetaCollection fromCollection : con.client.getMetaCollections() ){
-                for ( MetaField fromFiled : fromCollection.fields ){
-                    getExportedKeysRecursive(result, pkCollection, fromCollection, fromFiled);
+            MetaDatabase metaDatabase = con.client.getMetaDatabase(catalogName);
+            if ( metaDatabase != null ) {
+                for (MetaCollection fromCollection : metaDatabase.getMetaCollections() ) {
+                    con.client.discoverReferences(fromCollection);
+                    for (MetaField fromFiled : fromCollection.fields) {
+                        getExportedKeysRecursive(result, pkCollection, fromCollection, fromFiled);
+                    }
                 }
             }
         }
@@ -1252,11 +1259,11 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
             if ( iReference.pkCollection == pkCollection ){
 
                 result.addRow(new String[] {
-                        pkCollection.db, //PKTABLE_CAT
+                        pkCollection.metaDatabase.name, //PKTABLE_CAT
                         null, //PKTABLE_SCHEM
                         pkCollection.name,//PKTABLE_NAME
                         "_id", //PKCOLUMN_NAME
-                        fromCollection.db,//FKTABLE_CAT
+                        fromCollection.metaDatabase.name,//FKTABLE_CAT
                         null, //FKTABLE_SCHEM
                         fromFiled.getMetaCollection().name, //FKTABLE_NAME
                         iReference.fromField.getNameWithPath(),//FKCOLUMN_NAME
@@ -1280,10 +1287,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getExportedKeys(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public ResultSet getImportedKeys(String catalogName, String schemaName, String tableNamePattern ) throws SQLException
-    {
-        con.client.discoverReferences();
-
+    public ResultSet getImportedKeys(String catalogName, String schemaName, String tableNamePattern ) throws SQLException {
 
         ArrayResultSet result = new ArrayResultSet();
         result.setColumnNames(new String[]{"PKTABLE_CAT", "PKTABLE_SCHEM", "PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT", "FKTABLE_SCHEM",
@@ -1292,6 +1296,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
 
         MetaCollection fromCollection = con.client.getMetaCollection(catalogName, tableNamePattern);
         if ( fromCollection != null ){
+            con.client.discoverReferences(fromCollection);
             for ( MetaField fromFiled : fromCollection.fields ){
                 getImportedKeysRecursive(result, fromFiled);
             }
@@ -1303,11 +1308,11 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         for ( MetaReference reference : fromFiled.references ){
 
             result.addRow(new String[] {
-                    reference.pkCollection.db, //PKTABLE_CAT
+                    reference.pkCollection.metaDatabase.name, //PKTABLE_CAT
                     null, //PKTABLE_SCHEMA
                     reference.pkCollection.name,//PKTABLE_NAME
                     "_id", //PKCOLUMN_NAME
-                    reference.fromField.getMetaCollection().db,//FKTABLE_CAT
+                    reference.fromField.getMetaCollection().metaDatabase.name,//FKTABLE_CAT
                     null, //FKTABLE_SCHEM
                     reference.fromField.getMetaCollection().name, //FKTABLE_NAME
                     reference.fromField.getNameWithPath(),//FKCOLUMN_NAME

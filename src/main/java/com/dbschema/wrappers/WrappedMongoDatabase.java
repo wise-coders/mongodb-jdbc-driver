@@ -1,5 +1,6 @@
 package com.dbschema.wrappers;
 
+import com.dbschema.Util;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
@@ -8,6 +9,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
 import jdk.nashorn.api.scripting.AbstractJSObject;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
@@ -149,6 +151,7 @@ public class WrappedMongoDatabase extends AbstractJSObject {
                 "getReadConcern".equals(name)||
                 "listCollections".equals(name)||
                 "listCollectionNames".equals(name)||
+                "getViewSource".equals(name)||
                 "drop".equals(name)||
                 "runCommand".equals(name);
     }
@@ -156,51 +159,77 @@ public class WrappedMongoDatabase extends AbstractJSObject {
     @Override
     public Object getMember(final String name) {
         if ( hasMember( name ) ){
-                return new AbstractJSObject() {
-                    @Override
-                    public Object call(Object thiz, Object... args) {
-                        switch( name ){
-                            case "getCollection":
-                                if ( args.length == 1 && args[0] instanceof String ){
-                                    return getCollection( (String)args[0]);
+            return new AbstractJSObject() {
+                @Override
+                public Object call(Object thiz, Object... args) {
+                    switch( name ) {
+                        case "getCollection":
+                            if (args.length == 1 && args[0] instanceof String) {
+                                return getCollection((String) args[0]);
+                            }
+                            break;
+                        case "createCollection":
+                            if (args.length == 1 && args[0] instanceof String) {
+                                createCollection((String) args[0]);
+                            } else if (args.length == 2 && args[0] instanceof String && args[1] instanceof CreateCollectionOptions) {
+                                createCollection((String) args[0], (CreateCollectionOptions) args[1]);
+                            }
+                            break;
+                        case "createView":
+                            if (args.length == 3 && args[0] instanceof String && args[1] instanceof String) {
+                                mongoDatabase.createView((String) args[0], (String) args[1], Util.toBsonList(args[2]));
+                            }
+                            break;
+                        case "runCommand":
+                            if (args.length == 1 && args[0] instanceof String) {
+                                runCommand((String) args[0]);
+                            } else if (args.length == 1 && args[0] instanceof Map) {
+                                runCommand((Map) args[0]);
+                            } else if (args.length == 2 && args[0] instanceof Bson && args[1] instanceof Class) {
+                                runCommand((Bson) args[0], (Class) args[0]);
+                            }
+                            break;
+                        case "drop":
+                            drop();
+                            break;
+                        case "listCollectionNames":
+                            return listCollectionNames();
+                        case "listCollections":
+                            return listCollections();
+                        case "getViewSource":
+                            if (args.length == 1 && args[0] instanceof String) {
+                                for (Document doc : listCollections()) {
+                                    if ( args[0].equals( doc.get("name")) && "view".equals(doc.get("type"))) {
+                                        Document options = (Document)doc.get("options");
+                                        final StringBuilder sb = new StringBuilder();
+                                        sb.append(getName()).append(".createView(\n\t\"");
+                                        sb.append(doc.get("name")).append("\",\n\t\"").
+                                                append(options.get("viewOn")).
+                                                append("\",\n\t[\n\t\t");
+                                        boolean addComma = false;
+                                        for ( Object d : (List)options.get("pipeline")) {
+                                            if ( addComma) sb.append(",\n\t\t");
+                                            if ( d instanceof Document){
+                                                sb.append( ((Document)d).toJson() );
+                                            }else {
+                                                sb.append( d);
+                                            }
+                                            addComma = true;
+                                        }
+                                        sb.append("\n\t]\n)");
+                                        return sb.toString();
+                                    }
                                 }
-                                break;
-                            case "createCollection":
-                                if ( args.length == 1 && args[0] instanceof String ){
-                                    createCollection( (String)args[0]);
-                                } else if ( args.length == 2 && args[0] instanceof String && args[1] instanceof CreateCollectionOptions ){
-                                    createCollection( (String)args[0], (CreateCollectionOptions)args[1]);
-                                }
-                                break;
-                            case "createView":
-                                if ( args.length == 3 && args[0] instanceof String && args[1] instanceof String ){
-                                    mongoDatabase.createView( (String)args[0], (String)args[1], (List<? extends Bson>) args[2]);
-                                }
-                                break;
-                            case "runCommand":
-                                if ( args.length == 1 && args[0] instanceof String ){
-                                    runCommand( (String)args[0] );
-                                } else if ( args.length == 1 && args[0] instanceof Map ){
-                                    runCommand( (Map)args[0] );
-                                } else if ( args.length == 2 && args[0] instanceof Bson && args[1] instanceof Class ){
-                                    runCommand( (Bson)args[0], (Class)args[0] );
-                                }
-                                break;
-                            case "drop":
-                                drop();
-                                break;
-                            case "listCollectionNames":
-                                return listCollectionNames();
-                            case "listCollections":
-                                return listCollections();
-                        }
-                        return ( args.length == 1 ) ? getCollection(String.valueOf(args[0])) : null;
+                            }
+                            return null;
                     }
-                    @Override
-                    public boolean isFunction() {
-                        return true;
-                    }
-                };
+                    return ( args.length == 1 ) ? getCollection(String.valueOf(args[0])) : null;
+                }
+                @Override
+                public boolean isFunction() {
+                    return true;
+                }
+            };
         }
         return getCollection( name );
     }
