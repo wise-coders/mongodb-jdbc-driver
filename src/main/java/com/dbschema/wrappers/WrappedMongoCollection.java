@@ -421,22 +421,22 @@ public class WrappedMongoCollection<TDocument> {
     }
 
 
-    public void insertOne(Map o) {
-        mongoCollection.insertOne( (TDocument)( new Document( o )));
+    public void insertOne(Map input) {
+        mongoCollection.insertOne( toDocument(input ) );
     }
 
-    public void insertOne(Map o, InsertOneOptions options) {
-        mongoCollection.insertOne( toDocument(o), options );
-    }
-
-
-    public void insertOne(ClientSession clientSession, Map map) {
-        mongoCollection.insertOne( clientSession, toDocument( map ));
+    public void insertOne(Map input, InsertOneOptions options) {
+        mongoCollection.insertOne( toDocument(input), options );
     }
 
 
-    public void insertOne(ClientSession clientSession, Map o, InsertOneOptions options) {
-        mongoCollection.insertOne( clientSession, toDocument(o), options );
+    public void insertOne(ClientSession clientSession, Map input) {
+        mongoCollection.insertOne( clientSession, toDocument( input ));
+    }
+
+
+    public void insertOne(ClientSession clientSession, Map input, InsertOneOptions options) {
+        mongoCollection.insertOne( clientSession, toDocument(input), options );
     }
 
 
@@ -450,8 +450,8 @@ public class WrappedMongoCollection<TDocument> {
         insertOne( map );
     }
 
-    public void insert(Map o) {
-        mongoCollection.insertOne( toDocument(o));
+    public void insert(Map input) {
+        mongoCollection.insertOne( toDocument(input));
     }
 
     public void insert(List<Map> list) {
