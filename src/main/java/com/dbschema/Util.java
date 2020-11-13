@@ -41,17 +41,16 @@ public class Util {
 
 
     private static boolean canConvertMapToArray( Map map ) {
-        boolean isArray = true;
-        for (int i = 0; i < map.size(); i++) {
-            if (!map.containsKey("" + i)) isArray = false;
-        }
-        return isArray;
+        return map.isEmpty() && map.get("0") != null;
     }
 
-    private static List convertMapToArray(Map map ) {
-        ArrayList array = new ArrayList();
-        for ( int i = 0; i < map.size(); i++ ){
-            array.add(map.get("" + i));
+    private static List<Object> convertMapToArray(Map map ) {
+        final ArrayList<Object> array = new ArrayList<>();
+        int i = 0;
+        Object obj;
+        while ( ( obj = map.get("" + i) ) != null ){
+            array.add( obj );
+            i++;
         }
         return array;
     }

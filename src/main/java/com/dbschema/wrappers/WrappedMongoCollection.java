@@ -440,25 +440,31 @@ public class WrappedMongoCollection<TDocument> {
     }
 
 
-    public void insertMany(List<Map> list) {
-        for ( Map map: list ){
-            insertOne( map );
+    public void insertMany(Object map) {
+        if ( map instanceof List ){
+            for ( Map map1: (List<Map>)map ){
+                insertOne( map1 );
+            }
+        } else if ( map instanceof Map ){
+            insertOne( (Map)map );
         }
-    }
-
-    public void insertMany(Map map) {
-        insertOne( map );
     }
 
     public void insert(Map input) {
         mongoCollection.insertOne( toDocument(input));
     }
 
-    public void insert(List<Map> list) {
+    /*
+    public void insertMany(List<Map> list) {
         for ( Map map: list ){
             insertOne( map );
         }
     }
+    public void insert(List<Map> list) {
+        for ( Map map: list ){
+            insertOne( map );
+        }
+    }*/
 
 
     public void insertMany(List<Map> list, InsertManyOptions options) {
@@ -466,12 +472,10 @@ public class WrappedMongoCollection<TDocument> {
 
 
     public void insertMany(ClientSession clientSession, List list) {
-
     }
 
 
     public void insertMany(ClientSession clientSession, List list, InsertManyOptions options) {
-
     }
 
 

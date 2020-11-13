@@ -1,30 +1,25 @@
 package com.dbschema.wrappers;
 
 import com.dbschema.Util;
-import com.mongodb.BasicDBObject;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
-import com.mongodb.client.model.CreateCollectionOptions;
-import jdk.nashorn.api.scripting.AbstractJSObject;
-import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.conversions.Bson;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyExecutable;
+import org.graalvm.polyglot.proxy.ProxyObject;
 
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-
-import static com.dbschema.Util.toBson;
+import java.util.Set;
 
 
 /**
  * Wrapper class around MongoDatabase with direct access to collections as member variables.
  * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
  */
-public class WrappedMongoDatabase extends AbstractJSObject {
+public class WrappedMongoDatabase implements ProxyObject {
+
 
     private final MongoDatabase mongoDatabase;
 
@@ -32,67 +27,154 @@ public class WrappedMongoDatabase extends AbstractJSObject {
         this.mongoDatabase = mongoDatabase;
     }
 
-    public String getName() {
+    @Override
+    public boolean hasMember(String key) {
+        return true;
+    }
+
+    @Override
+    public Object getMember(String key) {
+        switch (key){
+            case "createView": return new CreateViewProxyExecutable();
+            case "getCollection" : return new GetCollectionProxyExecutable();
+            case "createCollection" : return new CreateCollectionProxyExecutable();
+            case "runCommand" : return new RunCommandProxyExecutable();
+            case "drop" : return new DropProxyExecutable();
+            case "listCollectionNames" : return new ListCollectionNamesProxyExecutable();
+            case "listCollections" : return new ListCollectionsProxyExecutable();
+            case "getViewSource" : return new GetViewSourceProxyExecutable();
+            case "getName" : return new GetNameProxyExecutable();
+            default: return new WrappedMongoCollection(mongoDatabase.getCollection( key ));
+        }
+    }
+
+    @Override
+    public Object getMemberKeys() {
+        Set<String> keys = new LinkedHashSet<>();
+        for ( String name : mongoDatabase.listCollectionNames() ){
+            keys.add( name );
+        }
+        return keys.toArray();
+    }
+
+    @Override
+    public void putMember(String key, Value value) {
+    }
+
+
+    @Override
+    public String toString() {
         return mongoDatabase.getName();
     }
 
-    public CodecRegistry getCodecRegistry() {
-        return mongoDatabase.getCodecRegistry();
+    private class CreateViewProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 3 && args[0].isString() && args[1].isString() && args[2].hasArrayElements()) {
+                mongoDatabase.createView(args[0].asString(), args[1].asString(), Util.toBsonList( args[2].as(List.class)) );
+            }
+            return null;
+        }
+    }
+    private class GetCollectionProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 1 && args[0].isString() ) {
+                return mongoDatabase.getCollection(args[0].asString());
+            }
+            return null;
+        }
+    }
+    private class CreateCollectionProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 1 && args[0].isString() ) {
+                mongoDatabase.createCollection(args[0].asString());
+            }
+            return null;
+        }
+    }
+    private class RunCommandProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 1 && args[0].hasArrayElements() ) {
+                mongoDatabase.runCommand( Util.toBson( args[2].as(List.class)) );
+            }
+            return null;
+        }
+    }
+    private class DropProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 0 ) {
+                mongoDatabase.drop();
+            }
+            return null;
+        }
+    }
+    private class ListCollectionNamesProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 0 ) {
+                return mongoDatabase.listCollectionNames();
+            }
+            return null;
+        }
+    }
+    private class ListCollectionsProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 0 ) {
+                return mongoDatabase.listCollections();
+            }
+            return null;
+        }
+    }
+    private class GetNameProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 0 ) {
+                return mongoDatabase.getName();
+            }
+            return null;
+        }
     }
 
-    public ReadPreference getReadPreference() {
-        return mongoDatabase.getReadPreference();
+    private class GetViewSourceProxyExecutable implements ProxyExecutable{
+        @Override
+        public Object execute(Value... args) {
+            if( args.length == 1 && args[0].isString()) {
+                for (Document doc : mongoDatabase.listCollections()) {
+                    if ( args[0].asString().equals( doc.get("name")) && "view".equals(doc.get("type"))) {
+                        Document options = (Document)doc.get("options");
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append( mongoDatabase.getName()).append(".createView(\n\t\"");
+                        sb.append(doc.get("name")).append("\",\n\t\"").
+                                append(options.get("viewOn")).
+                                append("\",\n\t[\n\t\t");
+                        boolean addComma = false;
+                        for ( Object d : (List)options.get("pipeline")) {
+                            if ( addComma) sb.append(",\n\t\t");
+                            if ( d instanceof Document){
+                                sb.append( ((Document)d).toJson() );
+                            }else {
+                                sb.append( d);
+                            }
+                            addComma = true;
+                        }
+                        sb.append("\n\t]\n)");
+                        Document ret = new Document();
+                        ret.put("source", sb.toString());
+                        return ret;
+                    }
+                }
+            }
+            return null;
+        }
     }
 
-    public WriteConcern getWriteConcern() {
-        return mongoDatabase.getWriteConcern();
-    }
-
-    public WrappedMongoDatabase withCodecRegistry(CodecRegistry codecRegistry) {
-        mongoDatabase.withCodecRegistry(codecRegistry);
-        return this;
-    }
-
-    public WrappedMongoDatabase withReadPreference(ReadPreference readPreference) {
-        mongoDatabase.withReadPreference(readPreference);
-        return this;
-    }
-
-    public WrappedMongoDatabase withWriteConcern(WriteConcern writeConcern) {
-        mongoDatabase.withWriteConcern(writeConcern );
-        return this;
-    }
-
-    public WrappedMongoCollection<Document> getCollection(String s) {
-        return new WrappedMongoCollection<>(mongoDatabase.getCollection(s ));
-    }
-
-    public <TDocument> WrappedMongoCollection<TDocument> getCollection(String s, Class<TDocument> tDocumentClass) {
-        return new WrappedMongoCollection<TDocument>( mongoDatabase.getCollection( s, tDocumentClass ) );
-    }
-
-    public Document runCommand(String str) {
-        return mongoDatabase.runCommand( BasicDBObject.parse(str) ) ;
-    }
-
-    public Document runCommand( Map map ){
-        return mongoDatabase.runCommand( toBson(map));
-    }
-
-    public Document runCommand(Bson bson, ReadPreference readPreference) {
-        return mongoDatabase.runCommand( bson, readPreference );
-    }
-
-    public <TResult> TResult runCommand(Bson bson, Class<TResult> tResultClass) {
-        return mongoDatabase.runCommand(bson, tResultClass);
-    }
-
-    public <TResult> TResult runCommand(Bson bson, ReadPreference readPreference, Class<TResult> tResultClass) {
-        return mongoDatabase.runCommand( bson, readPreference,  tResultClass);
-    }
-
-    public void drop() {
-        mongoDatabase.drop();
+    public String getName(){
+        return mongoDatabase.getName();
     }
 
     public MongoIterable<String> listCollectionNames() {
@@ -103,143 +185,12 @@ public class WrappedMongoDatabase extends AbstractJSObject {
         return mongoDatabase.listCollections();
     }
 
-    public <TResult> ListCollectionsIterable<TResult> listCollections(Class<TResult> tResultClass) {
-        return mongoDatabase.listCollections(tResultClass);
-    }
-
     public void createCollection( String s ) {
         mongoDatabase.createCollection( s );
     }
 
-    public void createCollection(String s, CreateCollectionOptions createCollectionOptions) {
-        mongoDatabase.createCollection(s, createCollectionOptions);
+    public WrappedMongoCollection<Document> getCollection(String s) {
+        return new WrappedMongoCollection<>(mongoDatabase.getCollection(s ));
     }
-
-    /*
-     *******  RHINO
-     * We overwrite this methods in order to support direct access to collections.
-     * Calling db.myCollection will return myCollection.
-     * @param name The name of the member
-     * @param start Scriptable
-     * @return true if exists
-     */
-    /*
-    @Override
-    public boolean has(String name, Scriptable start) {
-        if ( getCollection(name ) != null ) return true;
-        return super.has(name, start);
-    }
-
-    @Override
-    public Object get(String name, Scriptable start) {
-        if ( getCollection( name ) != null ){
-            return getCollection(name);
-        }
-        return super.get(name, start);
-    }
-*/
-
-    // **** NASHORN
-    // https://wiki.openjdk.java.net/display/Nashorn/Nashorn+extensions
-    // http://sites.psu.edu/robertbcolton/2015/07/31/java-8-nashorn-script-engine/
-
-    @Override
-    public boolean hasMember(String name) {
-        return "getCollection".equals( name ) ||
-                "createCollection".equals(name)||
-                "createView".equals(name)||
-                "getReadConcern".equals(name)||
-                "listCollections".equals(name)||
-                "listCollectionNames".equals(name)||
-                "getViewSource".equals(name)||
-                "drop".equals(name)||
-                "runCommand".equals(name);
-    }
-
-    @Override
-    public Object getMember(final String name) {
-        if ( hasMember( name ) ){
-            return new AbstractJSObject() {
-                @Override
-                public Object call(Object thiz, Object... args) {
-                    switch( name ) {
-                        case "getCollection":
-                            if (args.length == 1 && args[0] instanceof String) {
-                                return getCollection((String) args[0]);
-                            }
-                            break;
-                        case "createCollection":
-                            if (args.length == 1 && args[0] instanceof String) {
-                                createCollection((String) args[0]);
-                            } else if (args.length == 2 && args[0] instanceof String && args[1] instanceof CreateCollectionOptions) {
-                                createCollection((String) args[0], (CreateCollectionOptions) args[1]);
-                            }
-                            break;
-                        case "createView":
-                            if (args.length == 3 && args[0] instanceof String && args[1] instanceof String) {
-                                mongoDatabase.createView((String) args[0], (String) args[1], Util.toBsonList(args[2]));
-                            }
-                            break;
-                        case "runCommand":
-                            if (args.length == 1 && args[0] instanceof String) {
-                                runCommand((String) args[0]);
-                            } else if (args.length == 1 && args[0] instanceof Map) {
-                                runCommand((Map) args[0]);
-                            } else if (args.length == 2 && args[0] instanceof Bson && args[1] instanceof Class) {
-                                runCommand((Bson) args[0], (Class) args[0]);
-                            }
-                            break;
-                        case "drop":
-                            drop();
-                            break;
-                        case "listCollectionNames":
-                            return listCollectionNames();
-                        case "listCollections":
-                            return listCollections();
-                        case "getViewSource":
-                            if (args.length == 1 && args[0] instanceof String) {
-                                for (Document doc : listCollections()) {
-                                    if ( args[0].equals( doc.get("name")) && "view".equals(doc.get("type"))) {
-                                        Document options = (Document)doc.get("options");
-                                        final StringBuilder sb = new StringBuilder();
-                                        sb.append(getName()).append(".createView(\n\t\"");
-                                        sb.append(doc.get("name")).append("\",\n\t\"").
-                                                append(options.get("viewOn")).
-                                                append("\",\n\t[\n\t\t");
-                                        boolean addComma = false;
-                                        for ( Object d : (List)options.get("pipeline")) {
-                                            if ( addComma) sb.append(",\n\t\t");
-                                            if ( d instanceof Document){
-                                                sb.append( ((Document)d).toJson() );
-                                            }else {
-                                                sb.append( d);
-                                            }
-                                            addComma = true;
-                                        }
-                                        sb.append("\n\t]\n)");
-                                        return sb.toString();
-                                    }
-                                }
-                            }
-                            return null;
-                    }
-                    return ( args.length == 1 ) ? getCollection(String.valueOf(args[0])) : null;
-                }
-                @Override
-                public boolean isFunction() {
-                    return true;
-                }
-            };
-        }
-        return getCollection( name );
-    }
-
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-
-
 }
+

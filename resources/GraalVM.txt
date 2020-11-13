@@ -1,0 +1,318 @@
+I got a proxy solution for GraalVM.
+I failed to execute db.collection.find({ $and:[{'name':'bla'}, {'name':'cea'}]
+The issue was with arrays and maps.
+I created an issue: https://github.com/graalvm/graaljs/issues/369
+
+###############################################
+
+build.gradle
+
+compile "org.graalvm.js:js:20.2.0"
+compile "org.graalvm.js:js-scriptengine:20.2.0"
+compile "org.javadelight:delight-nashorn-sandbox:0.1.31"
+
+###############################################
+
+
+
+In MongoPreparedStatement:
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+
+
+Context context = Context.newBuilder("js").allowAllAccess(true).build();
+boolean dbIsSet = false;
+Value bindings = context.getBindings("js");
+for ( WrappedMongoDatabase db : con.getDatabases() ){
+    bindings.putMember(db.getName(), db );
+    if ( con.getCatalog() != null && con.getCatalog().equals(db.getName())){
+    bindings.putMember("db", db);
+    dbIsSet = true;
+    }
+    }
+    if ( !dbIsSet ){
+    bindings.putMember("db", con.getDatabase("admin"));
+}
+
+
+final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
+"var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
+context.eval( "js", script );
+
+Object obj = context.eval( "js", query );
+if ( obj instanceof Iterable){
+    lastResultSet = new ResultSetIterator( ((Iterable)obj).iterator(), con.client.expandResultSet );
+} else if ( obj instanceof Iterator){
+    lastResultSet = new ResultSetIterator( (Iterator)obj, con.client.expandResultSet );
+} else if ( obj instanceof WrappedMongoCollection ){
+    lastResultSet = new ResultSetIterator( ((WrappedMongoCollection)obj).find(), con.client.expandResultSet );
+}
+return lastResultSet;
+
+########################################################
+
+package com.dbschema.wrappers;
+
+import com.dbschema.Util;
+import com.mongodb.BasicDBObject;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
+import com.mongodb.client.ListCollectionsIterable;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.CreateCollectionOptions;
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyObject;
+
+import java.util.*;
+
+import static com.dbschema.Util.toBson;
+
+//import jdk.nashorn.api.scripting.AbstractJSObject;
+
+
+/**
+ * Wrapper class around MongoDatabase with direct access to collections as member variables.
+ * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+ */
+public class WrappedMongoDatabase implements ProxyObject {
+
+
+    @Override
+    public boolean hasMember(String key) {
+        return true;
+    }
+
+    @Override
+    public Object getMember(String key) {
+        return new WrappedMongoCollection(mongoDatabase.getCollection( key ));
+    }
+
+    @Override
+    public Object getMemberKeys() {
+        Set<String> keys = new LinkedHashSet<>();
+        for ( String name : mongoDatabase.listCollectionNames() ){
+            keys.add( name );
+        }
+        return keys.toArray();
+    }
+
+    @Override
+    public void putMember(String key, Value value) {
+    }
+
+    private final MongoDatabase mongoDatabase;
+
+    WrappedMongoDatabase(MongoDatabase mongoDatabase ){
+        this.mongoDatabase = mongoDatabase;
+    }
+
+    public String getName() {
+        return mongoDatabase.getName();
+    }
+
+    public CodecRegistry getCodecRegistry() {
+        return mongoDatabase.getCodecRegistry();
+    }
+
+    public ReadPreference getReadPreference() {
+        return mongoDatabase.getReadPreference();
+    }
+
+    public WriteConcern getWriteConcern() {
+        return mongoDatabase.getWriteConcern();
+    }
+
+    public WrappedMongoDatabase withCodecRegistry(CodecRegistry codecRegistry) {
+        mongoDatabase.withCodecRegistry(codecRegistry);
+        return this;
+    }
+
+    public WrappedMongoDatabase withReadPreference(ReadPreference readPreference) {
+        mongoDatabase.withReadPreference(readPreference);
+        return this;
+    }
+
+    public WrappedMongoDatabase withWriteConcern(WriteConcern writeConcern) {
+        mongoDatabase.withWriteConcern(writeConcern );
+        return this;
+    }
+
+
+    public <TDocument> WrappedMongoCollection<TDocument> getCollection(String s, Class<TDocument> tDocumentClass) {
+        return new WrappedMongoCollection<TDocument>( mongoDatabase.getCollection( s, tDocumentClass ) );
+    }
+
+    public WrappedMongoCollection<Document> getCollection(String s) {
+        return new WrappedMongoCollection<>(mongoDatabase.getCollection(s ));
+    }
+
+    public Document runCommand(String str) {
+        return mongoDatabase.runCommand( BasicDBObject.parse(str) ) ;
+    }
+
+    public Document runCommand( Map map ){
+        return mongoDatabase.runCommand( toBson(map));
+    }
+
+    public Document runCommand(Bson bson, ReadPreference readPreference) {
+        return mongoDatabase.runCommand( bson, readPreference );
+    }
+
+    public <TResult> TResult runCommand(Bson bson, Class<TResult> tResultClass) {
+        return mongoDatabase.runCommand(bson, tResultClass);
+    }
+
+    public <TResult> TResult runCommand(Bson bson, ReadPreference readPreference, Class<TResult> tResultClass) {
+        return mongoDatabase.runCommand( bson, readPreference,  tResultClass);
+    }
+
+    public void drop() {
+        mongoDatabase.drop();
+    }
+
+    public MongoIterable<String> listCollectionNames() {
+        return mongoDatabase.listCollectionNames();
+    }
+
+    public ListCollectionsIterable<Document> listCollections() {
+        return mongoDatabase.listCollections();
+    }
+
+    public <TResult> ListCollectionsIterable<TResult> listCollections(Class<TResult> tResultClass) {
+        return mongoDatabase.listCollections(tResultClass);
+    }
+
+    public void createCollection( String s ) {
+        mongoDatabase.createCollection( s );
+    }
+
+    public void createCollection(String s, CreateCollectionOptions createCollectionOptions) {
+        mongoDatabase.createCollection(s, createCollectionOptions);
+    }
+
+
+    public void createView( String name, String viewOn, Object options ){
+        mongoDatabase.createView( name, viewOn, Util.toBsonList(options));
+    }
+
+    public String getViewSource( String viewName ){
+        for (Document doc : listCollections()) {
+            if ( viewName != null && viewName.equals( doc.get("name")) && "view".equals(doc.get("type"))) {
+                Document options = (Document)doc.get("options");
+                final StringBuilder sb = new StringBuilder();
+                sb.append(getName()).append(".createView(\n\t\"");
+                sb.append(doc.get("name")).append("\",\n\t\"").
+                        append(options.get("viewOn")).
+                        append("\",\n\t[\n\t\t");
+                boolean addComma = false;
+                for ( Object d : (List)options.get("pipeline")) {
+                    if ( addComma) sb.append(",\n\t\t");
+                    if ( d instanceof Document){
+                        sb.append( ((Document)d).toJson() );
+                    }else {
+                        sb.append( d);
+                    }
+                    addComma = true;
+                }
+                sb.append("\n\t]\n)");
+                return sb.toString();
+            }
+        }
+        return null;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+}
+
+
+########################################################
+
+package com.dbschema;
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyObject;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class TestGraal {
+
+    static class ModifiableHostAccess implements ProxyObject {
+
+        private final Value hostObject;
+        private final Map<String, Value> modified= new LinkedHashMap<>();
+
+        ModifiableHostAccess(Value hostObject) {
+            this.hostObject = hostObject;
+        }
+
+        @Override
+        public boolean hasMember(String key) {
+            return modified.containsKey(key )|| hostObject.getMember(key) != null;
+        }
+
+        @Override
+        public Object getMember(String key) {
+            if (modified.containsKey(key)) {
+                return modified.get(key);
+            } else {
+                return hostObject.getMember(key);
+            }
+        }
+/*
+        @Override
+        public Object getMemberKeys() {
+            return hostObject.getMemberKeys().toArray();
+        }
+*/
+        @Override
+        public Object getMemberKeys() {
+            if(modified.isEmpty()) {
+                return hostObject.getMemberKeys().toArray();
+            } else {
+                Set<String> keys = new LinkedHashSet<>();
+                keys.addAll(modified.keySet());
+                keys.addAll(hostObject.getMemberKeys());
+                return keys.toArray();
+            }
+        }
+
+        @Override
+        public void putMember(String key, Value value) {
+            modified.put(key, value);
+        }
+    }
+
+    public static class MySharedObject {
+
+        public String modifiable() {
+            return "41";
+        }
+    }
+
+    public static void main(String[] args) {
+        Context context = Context.create();
+        ModifiableHostAccess access = new ModifiableHostAccess(context.asValue(new MySharedObject()));
+
+        context.getBindings("js").putMember("modifiableHostObject", access);
+        context.eval("js", "modifiableHostObject.modifiable = '42'");
+
+        // prints "42"
+        System.out.println(context.eval("js", "modifiableHostObject.modifiable"));
+    }
+}
+
+

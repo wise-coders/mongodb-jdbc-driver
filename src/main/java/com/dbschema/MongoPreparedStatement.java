@@ -10,11 +10,9 @@ import com.dbschema.wrappers.WrappedMongoCollection;
 import com.dbschema.wrappers.WrappedMongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -23,7 +21,6 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,19 +32,19 @@ import java.util.regex.Pattern;
  */
 public class MongoPreparedStatement implements PreparedStatement {
 
-    private final MongoConnection con;
+    private final MongoConnection connection;
     private ResultSet lastResultSet;
     private boolean isClosed = false;
     private int maxRows = -1;
     private final String query;
 
-    MongoPreparedStatement(final MongoConnection con) {
-        this.con = con;
+    MongoPreparedStatement(final MongoConnection connection) {
+        this.connection = connection;
         this.query = null;
     }
 
-    MongoPreparedStatement(final MongoConnection con, String query) {
-        this.con = con;
+    MongoPreparedStatement(final MongoConnection connection, String query) {
+        this.connection = connection;
         this.query = query;
     }
 
@@ -72,6 +69,32 @@ public class MongoPreparedStatement implements PreparedStatement {
     private static final Pattern PATTERN_SHOW_RULES = Pattern.compile("SHOW\\s+RULES\\s*", Pattern.CASE_INSENSITIVE );
     private static final Pattern PATTERN_SHOW_PROFILES = Pattern.compile("SHOW\\s+PROFILES\\s*", Pattern.CASE_INSENSITIVE );
 
+    private static final String INITIALIZATION_SCRIPT = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
+            "" +
+            "var ISODate = function( str ) { " +
+            "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
+            "\n" +
+            "for (i = 0; i < formats.length; i++)  {\n" +
+            "    try {\n" +
+            "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
+            "    } catch (error) { }\n" +
+            "}\n" +
+            "throw new java.text.ParseException(\"Un-parsable ISO date: \" + str + \" Configured formats: \" + formats, 0);" +
+            "return null;" +
+            "};\n\n" +
+
+            "var Date = function( str ) { " +
+            "var formats = [\"yyyy-MM-dd\", \"dd-MM-yyyy\", \"dd.MM.yyyy\", \"d.MM.yyyy\", \"dd/MM/yyyy\", \"yyyy.MM.dd\", \"M/d/yyyy\" ];\n" +
+            "\n" +
+            "for (i = 0; i < formats.length; i++)  {\n" +
+            "    try {\n" +
+            "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
+            "    } catch (error) { }\n" +
+            "}\n" +
+            "throw new java.text.ParseException(\"Un-parsable date: \" + str + \" Configured formats: \" + formats, 0);" +
+            "return null;" +
+            "}";
+
     @Override
     public ResultSet executeQuery(String query) throws SQLException	{
         checkClosed();
@@ -81,115 +104,83 @@ public class MongoPreparedStatement implements PreparedStatement {
         if ( query == null ){
             throw new SQLException("Null statement.");
         }
-        Matcher matcherSetDb = PATTERN_USE_DATABASE.matcher( query );
+        String plainQuery = query.trim();
+        if ( plainQuery.endsWith(";")){
+            plainQuery = plainQuery.substring(0, plainQuery.length()-1);
+        }
+        Matcher matcherSetDb = PATTERN_USE_DATABASE.matcher( plainQuery );
         if ( matcherSetDb.matches() ){
             String db = matcherSetDb.group(1).trim();
             if ( ( db.startsWith("\"") && db.endsWith("\"")) || ( db.startsWith("'") && db.endsWith("'"))){
                 db = db.substring( 1, db.length()-1);
             }
-            con.setCatalog( db );
+            connection.setCatalog( db );
             return new OkResultSet();
         }
-        Matcher matcherCreateDatabase = PATTERN_CREATE_DATABASE.matcher( query );
+        Matcher matcherCreateDatabase = PATTERN_CREATE_DATABASE.matcher( plainQuery );
         if ( matcherCreateDatabase.matches() ){
             final String dbName = matcherCreateDatabase.group(1);
-            con.getDatabase(dbName);
+            connection.getDatabase(dbName);
             WrappedMongoClient.createdDatabases.add(dbName);
             return new OkResultSet();
         }
         if ( query.toLowerCase().startsWith("show ")){
-            if ( PATTERN_SHOW_DATABASES.matcher( query ).matches() || PATTERN_SHOW_DBS.matcher( query ).matches() ){
+            if ( PATTERN_SHOW_DATABASES.matcher( query ).matches() || PATTERN_SHOW_DBS.matcher( plainQuery ).matches() ){
                 ArrayResultSet result = new ArrayResultSet();
                 result.setColumnNames(new String[]{"DATABASE_NAME"});
-                for ( String str : con.getDatabaseNames() ){
+                for ( String str : connection.getDatabaseNames() ){
                     result.addRow( new String[]{ str });
                 }
                 return lastResultSet = result;
-            } else if ( PATTERN_SHOW_COLLECTIONS.matcher( query ).matches()){
+            } else if ( PATTERN_SHOW_COLLECTIONS.matcher( plainQuery ).matches()){
                 ArrayResultSet result = new ArrayResultSet();
                 result.setColumnNames(new String[]{"COLLECTION_NAME"});
-                for ( String str : con.client.getCollectionNames(con.getCatalog()) ){
+                for ( String str : connection.client.getCollectionNames(connection.getCatalog()) ){
                     result.addRow( new String[]{ str });
                 }
                 return lastResultSet = result;
-            } else if ( PATTERN_SHOW_USERS.matcher( query ).matches()){
-                query = "db.runCommand(\"{usersInfo:'" + con.getCatalog() + "'}\")";
-            } else if ( PATTERN_SHOW_PROFILES.matcher( query ).matches() || PATTERN_SHOW_RULES.matcher( query ).matches() ){
+            } else if ( PATTERN_SHOW_USERS.matcher( plainQuery ).matches()){
+                query = "db.runCommand(\"{usersInfo:'" + connection.getCatalog() + "'}\")";
+            } else if ( PATTERN_SHOW_PROFILES.matcher( plainQuery ).matches() || PATTERN_SHOW_RULES.matcher( plainQuery ).matches() ){
                 throw new SQLException("Not yet implemented in this driver.");
             } else {
-                throw new SQLException("Invalid command : " + query);
+                throw new SQLException("Invalid command : " + plainQuery);
             }
         }
         try {
-
-            // ************** NASHORN ENGINE  ***************
-            // Without setting the context class loader I get errors about org.bson.types.ObjectId not found
-            Thread.currentThread().setContextClassLoader(org.bson.types.ObjectId.class.getClassLoader());
-
-            ScriptEngine engine = new ScriptEngineManager().getEngineByName("Nashorn");
-            Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-            bindings.put("polyglot.js.allowHostAccess", true);
-            bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) s -> true);
-
+            Context context = Context.newBuilder("js").allowAllAccess(true).build();
             boolean dbIsSet = false;
-            final Bindings binding = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-            for ( WrappedMongoDatabase db : con.getDatabases() ){
-                binding.put( db.getName(), db);
-                if ( con.getCatalog() != null && con.getCatalog().equals(db.getName())){
-                    binding.put( "db", db );
+            Value bindings = context.getBindings("js");
+            for ( WrappedMongoDatabase db : connection.getDatabases() ){
+                bindings.putMember(db.getName(), db );
+                if ( connection.getCatalog() != null && connection.getCatalog().equals(db.getName())){
+                    bindings.putMember("db", db);
                     dbIsSet = true;
                 }
             }
             if ( !dbIsSet ){
-                binding.put( "db", con.getDatabase("admin"));
+                bindings.putMember("db", connection.getDatabase("admin"));
             }
-            binding.put("client", con);
-            final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-                    "" +
-                    "var ISODate = function( str ) { " +
-                    "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
-                    "\n" +
-                    "for (i = 0; i < formats.length; i++)  {\n" +
-                    "    try {\n" +
-                    "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
-                    "    } catch (error) { }\n" +
-                    "}\n" +
-                    "throw new java.text.ParseException(\"Un-parsable ISO date: \" + str + \" Configured formats: \" + formats, 0);" +
-                    "return null;" +
-                    "};\n\n" +
+            bindings.putMember("client", connection);
+            context.eval("js", INITIALIZATION_SCRIPT);
 
-                    "var Date = function( str ) { " +
-                    "var formats = [\"yyyy-MM-dd\", \"dd-MM-yyyy\", \"dd.MM.yyyy\", \"d.MM.yyyy\", \"dd/MM/yyyy\", \"yyyy.MM.dd\", \"M/d/yyyy\" ];\n" +
-                    "\n" +
-                    "for (i = 0; i < formats.length; i++)  {\n" +
-                    "    try {\n" +
-                    "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
-                    "    } catch (error) { }\n" +
-                    "}\n" +
-                    "throw new java.text.ParseException(\"Un-parsable date: \" + str + \" Configured formats: \" + formats, 0);" +
-                    "return null;" +
-                    "}";
-
-            //"var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
-            engine.eval(script);
-            Object obj = engine.eval(query);
-            if ( obj instanceof Iterable){
-                lastResultSet = new ResultSetIterator( ((Iterable)obj).iterator(), con.client.expandResultSet );
-            } else if ( obj instanceof Iterator){
-                lastResultSet = new ResultSetIterator( (Iterator)obj, con.client.expandResultSet );
-            } else if ( obj instanceof WrappedMongoCollection ){
-                lastResultSet = new ResultSetIterator( ((WrappedMongoCollection)obj).find(), con.client.expandResultSet );
-            } else if ( obj != null ){
-                lastResultSet = new ObjectAsResultSet( obj );
+            Value value = context.eval( "js", query );
+            if ( value.isHostObject() ) {
+                Object obj = value.asHostObject();
+                if (obj instanceof Iterable) {
+                    lastResultSet = new ResultSetIterator(((Iterable) obj).iterator(), connection.client.expandResultSet);
+                } else if (obj instanceof Iterator) {
+                    lastResultSet = new ResultSetIterator((Iterator) obj, connection.client.expandResultSet);
+                } else if (obj instanceof WrappedMongoCollection) {
+                    lastResultSet = new ResultSetIterator(((WrappedMongoCollection) obj).find(), connection.client.expandResultSet);
+                } else if (obj != null) {
+                    lastResultSet = new ObjectAsResultSet(obj);
+                }
             }
             return lastResultSet;
-
         } catch ( Throwable ex ){
             throw new SQLException( ex.getMessage(), ex );
         }
-
-
-
     }
 
     public StringBuilder debug( Document doc, String prefix, StringBuilder out ){
@@ -243,14 +234,14 @@ public class MongoPreparedStatement implements PreparedStatement {
     }
 
     private WrappedMongoDatabase getDatabase(String name){
-        for ( WrappedMongoDatabase scan : con.getDatabases() ){
+        for ( WrappedMongoDatabase scan : connection.getDatabases() ){
             if ( scan.getName().equalsIgnoreCase( name )){
                 return scan;
             }
         }
-        if ( "db".equals( name ) && con.getCatalog() != null ){
-            for ( WrappedMongoDatabase scan : con.getDatabases() ){
-                if ( scan.getName().equalsIgnoreCase( con.getCatalog() )){
+        if ( "db".equals( name ) && connection.getCatalog() != null ){
+            for ( WrappedMongoDatabase scan : connection.getDatabases() ){
+                if ( scan.getName().equalsIgnoreCase( connection.getCatalog() )){
                     return scan;
                 }
             }
@@ -332,22 +323,22 @@ public class MongoPreparedStatement implements PreparedStatement {
     }
 
     @Override
-    public int getMaxFieldSize() throws SQLException
+    public int getMaxFieldSize()
     {
 
         return 0;
     }
 
     @Override
-    public void setMaxFieldSize(final int max) throws SQLException{	}
+    public void setMaxFieldSize(final int max) {	}
 
     @Override
-    public int getMaxRows() throws SQLException	{
+    public int getMaxRows() {
         return maxRows;
     }
 
     @Override
-    public void setMaxRows(final int max) throws SQLException
+    public void setMaxRows(final int max)
     {
         this.maxRows = max;
     }
@@ -450,7 +441,7 @@ public class MongoPreparedStatement implements PreparedStatement {
     @Override
     public Connection getConnection() throws SQLException {
         checkClosed();
-        return this.con;
+        return this.connection;
     }
 
     @Override
@@ -803,96 +794,6 @@ public class MongoPreparedStatement implements PreparedStatement {
     }
 }
 
-
-
-
-
-
-
-
-/* **************** GRAAL
-        // https://github.com/oracle/graal/issues/1257
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("graal.js");
-        Bindings bindings = engine.createBindings();
-        bindings.put("polyglot.js.allowAllAccess", true);
-        boolean dbIsSet = false;
-        for ( WrappedMongoDatabase db : con.getDatabases() ){
-            bindings.put(db.getName(), db );
-            if ( con.getCatalog() != null && con.getCatalog().equals(db.getName())){
-                bindings.put("db", db);
-                dbIsSet = true;
-            }
-        }
-        if ( !dbIsSet ){
-            bindings.put("db", con.getDatabase("admin"));
-        }
-
-        engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-        final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-                "var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
-        engine.eval( script );
-
-
-        Object obj = engine.eval( query );
-        //engine.eval("var myFn = function(name){return foo.hi(name);}");
-        //System.out.println( engine.eval("myFn('Fred')"));
-        if ( obj instanceof Iterable){
-            lastResultSet = new ResultSetIterator( ((Iterable)obj).iterator(), con.client.expandResultSet );
-        } else if ( obj instanceof Iterator){
-            lastResultSet = new ResultSetIterator( (Iterator)obj, con.client.expandResultSet );
-        } else if ( obj instanceof WrappedMongoCollection ){
-            lastResultSet = new ResultSetIterator( ((WrappedMongoCollection)obj).find(), con.client.expandResultSet );
-        }
-        return lastResultSet;
-
- */
-
-
-/* ****************  RHINO
-
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Value;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-
-
-            Context cx = Context.enter();
-            Scriptable scope = cx.initStandardObjects();
-            boolean dbIsSet = false;
-            for ( WrappedMongoDatabase db : con.getDatabases() ){
-                ScriptableObject.putProperty(scope, db.getName(), Context.javaToJS(db, scope));
-                if ( con.getCatalog() != null && con.getCatalog().equals(db.getName())){
-                    Object value = Context.javaToJS(db, scope);
-                    ScriptableObject.putProperty(scope, "db", value);
-                    dbIsSet = true;
-                }
-            }
-            if ( !dbIsSet ){
-                ScriptableObject.putProperty(scope, "db", Context.javaToJS(con.getDatabase("admin"), scope));
-            }
-            ScriptableObject.putProperty(scope, "client", Context.javaToJS(con, scope));
-            final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-                    "var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
-            cx.evaluateString(scope, script, "DbSchemaInclude", 1, null );
-
-            // Execute the script
-            Object obj = cx.evaluateString(scope, query, "DbSchemaScript", 1, null);
-            Context.exit();
-            if ( obj instanceof org.mozilla.javascript.Wrapper ){
-                obj = ((org.mozilla.javascript.Wrapper)obj).unwrap();
-            }
-            if ( obj instanceof Iterable){
-                lastResultSet = new ResultSetIterator( ((Iterable)obj).iterator(), con.client.expandResultSet );
-            } else if ( obj instanceof Iterator){
-                lastResultSet = new ResultSetIterator( (Iterator)obj, con.client.expandResultSet );
-            } else if ( obj instanceof WrappedMongoCollection ){
-                lastResultSet = new ResultSetIterator( ((WrappedMongoCollection)obj).find(), con.client.expandResultSet );
-            }
-            return lastResultSet;
-        } catch ( RhinoException ex ){
-            throw new SQLException( ex.getMessage() + " at line " + ex.lineNumber() + " at column " + ex.columnNumber(), ex );*/
 
 
 

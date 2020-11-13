@@ -11,7 +11,11 @@ class AbstractTestCase {
         while ( rs != null && rs.next()){
             Object obj = rs.getObject(1 );
             if ( obj != null ){
-                System.out.println( new Gson().toJson(obj));
+                try {
+                    System.out.println(new Gson().toJson(obj));
+                } catch ( Throwable ex ){
+                    System.out.println(obj);
+                }
             }
         }
     }

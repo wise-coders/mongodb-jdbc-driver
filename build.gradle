@@ -18,13 +18,10 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
-    compile "org.mongodb:mongo-java-driver:3.12.6"
-    //compile "org.mozilla:rhino:1.7.11"
-    //compile "org.graalvm.js:js-scriptengine:19.2.1"
-    //compile "org.graalvm.js:js:19.2.1"
-    //compile "org.graalvm.js:js-launcher:19.2.1"
+    compile "org.mongodb:mongo-java-driver:3.12.7"
+    compile "org.graalvm.js:js:20.2.0"
+    compile "org.graalvm.js:js-scriptengine:20.2.0"
     compile "com.google.code.gson:gson:2.8.6"
     testCompile 'junit:junit:4.12'
 }
@@ -59,11 +56,12 @@ task zip(type: Zip, dependsOn:['clean','jar']) {
     from configurations.runtime
 }
 
+/*
 task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtime.allArtifacts.files
     from configurations.runtime
     into "${project.projectDir}/../../dbschema/src/dist/drivers/MongoDb/"
-}
+}*/
 
 task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtime.allArtifacts.files

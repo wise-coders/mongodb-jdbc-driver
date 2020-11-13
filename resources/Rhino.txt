@@ -1,0 +1,56 @@
+Last time I didn't finish to convert AbstractJSObject to scriptable.
+I created an issue: https://github.com/mozilla/rhino/issues/789
+
+// **********************
+
+compile "org.mozilla:rhino:1.7.11"
+
+
+
+/* ****************  RHINO
+
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.RhinoException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+
+
+Context cx = Context.enter();
+Scriptable scope = cx.initStandardObjects();
+boolean dbIsSet = false;
+for ( WrappedMongoDatabase db : con.getDatabases() ){
+    ScriptableObject.putProperty(scope, db.getName(), Context.javaToJS(db, scope));
+    if ( con.getCatalog() != null && con.getCatalog().equals(db.getName())){
+        Object value = Context.javaToJS(db, scope);
+        ScriptableObject.putProperty(scope, "db", value);
+        dbIsSet = true;
+    }
+}
+if ( !dbIsSet ){
+    ScriptableObject.putProperty(scope, "db", Context.javaToJS(con.getDatabase("admin"), scope));
+}
+ScriptableObject.putProperty(scope, "client", Context.javaToJS(con, scope));
+final String script = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
+        "var ISODate = function( str ) { return new java.text.SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\").parse(str);}";
+cx.evaluateString(scope, script, "DbSchemaInclude", 1, null );
+
+// Execute the script
+Object obj = cx.evaluateString(scope, query, "DbSchemaScript", 1, null);
+Context.exit();
+if ( obj instanceof org.mozilla.javascript.Wrapper ){
+    obj = ((org.mozilla.javascript.Wrapper)obj).unwrap();
+}
+if ( obj instanceof Iterable){
+    lastResultSet = new ResultSetIterator( ((Iterable)obj).iterator(), con.client.expandResultSet );
+} else if ( obj instanceof Iterator){
+    lastResultSet = new ResultSetIterator( (Iterator)obj, con.client.expandResultSet );
+} else if ( obj instanceof WrappedMongoCollection ){
+    lastResultSet = new ResultSetIterator( ((WrappedMongoCollection)obj).find(), con.client.expandResultSet );
+}
+return lastResultSet;
+} catch ( RhinoException ex ){
+throw new SQLException( ex.getMessage() + " at line " + ex.lineNumber() + " at column " + ex.columnNumber(), ex );*/
+
+

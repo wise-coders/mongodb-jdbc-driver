@@ -36,7 +36,6 @@ public class MongoJdbcDriver implements Driver
 
             LOGGER.setLevel(Level.FINEST);
             LOGGER.addHandler(consoleHandler);
-
         } catch ( SQLException ex ){
             ex.printStackTrace();
         }

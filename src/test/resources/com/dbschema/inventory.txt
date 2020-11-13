@@ -1,3 +1,5 @@
+use local;
+
 db.inventory.drop();
 
 db.inventory.insertMany([
