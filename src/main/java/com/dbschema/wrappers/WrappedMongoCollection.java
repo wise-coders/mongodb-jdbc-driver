@@ -29,6 +29,8 @@ import static com.dbschema.Util.toBsonList;
 public class WrappedMongoCollection<TDocument> {
 
     private final MongoCollection<TDocument> mongoCollection;
+
+
     WrappedMongoCollection(MongoCollection<TDocument> base ){
         this.mongoCollection = base;
     }

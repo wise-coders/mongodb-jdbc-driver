@@ -80,7 +80,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 1 && args[0].isString() ) {
-                return mongoDatabase.getCollection(args[0].asString());
+                return getCollection(args[0].asString());
             }
             return null;
         }

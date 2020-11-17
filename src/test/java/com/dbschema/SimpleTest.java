@@ -170,5 +170,12 @@ public class SimpleTest extends AbstractTestCase{
         stmt.close();
     }
 
+    @Test
+    public void testInsert3() throws Exception {
+        Statement st = con.createStatement();
+        st.execute("local.getCollection('issue2').insert({ 'name' : 'aaa' })");
+        st.close();
+    }
+
 
 }
