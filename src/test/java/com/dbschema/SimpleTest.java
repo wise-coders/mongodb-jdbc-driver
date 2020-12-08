@@ -177,5 +177,22 @@ public class SimpleTest extends AbstractTestCase{
         st.close();
     }
 
+    @Test
+    public void testCreateCollection() throws Exception {
+        Statement st = con.createStatement();
+        st.execute("local.createCollection( 'accounts',\n" +
+                "   {\n" +
+                "      validator: { $and:\n" +
+                "         [\n" +
+                "            { username: { $type: 'string' } },\n" +
+                "            { email: { $regex: '/@*\\.*$/' } },\n" +
+                "            { password: { $type: 'string' } }\n" +
+                "         ]\n" +
+                "      }\n" +
+                "   }\n" +
+                ")");
+        st.close();
+    }
+
 
 }

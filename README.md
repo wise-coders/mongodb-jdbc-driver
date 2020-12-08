@@ -86,6 +86,9 @@ Writing the Wrapper class we added methods which receive Map objects and we take
 
 In test cases we try to add all possible queries we want to support. If you find any query which does not work please feel free to commit in the source code or write us.
 
+## Contributors
+
+PLEASE HELP US TO IMPROVE THIS DRIVER BY ADDING FIXES AND CREATE PULL REQUESTS. 
 
 ## How to Test the Driver
 

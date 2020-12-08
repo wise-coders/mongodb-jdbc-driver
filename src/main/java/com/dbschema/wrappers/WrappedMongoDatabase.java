@@ -4,13 +4,17 @@ import com.dbschema.Util;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.ValidationOptions;
 import org.bson.Document;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
+import sun.java2d.pipe.ValidatePipe;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -90,6 +94,28 @@ public class WrappedMongoDatabase implements ProxyObject {
         public Object execute(Value... args) {
             if( args.length == 1 && args[0].isString() ) {
                 mongoDatabase.createCollection(args[0].asString());
+            }
+            if( args.length == 2 && args[0].isString()){
+                if ( args[1].isHostObject() ) {
+                    mongoDatabase.createCollection(args[0].asString(), args[1].asHostObject());
+                }
+                final Map map = args[1].as(Map.class);
+                if ( map != null ){
+                    CreateCollectionOptions options = new CreateCollectionOptions();
+                    if ( map.containsKey("validator") ) {
+                        options.validationOptions(new ValidationOptions().validator(Util.toBson(map.get("validator"))));
+                    }
+                    if ( map.containsKey("storageEngine") ) {
+                        options.storageEngineOptions(Util.toBson(map.get("storageEngine")));
+                    }
+                    if ( map.containsKey("capped") ) {
+                        options.capped(Boolean.parseBoolean( String.valueOf( map.get("capped"))));
+                    }
+                    if ( map.containsKey("max") ) {
+                        options.maxDocuments(Long.parseLong( String.valueOf( map.get("max"))));
+                    }
+                    mongoDatabase.createCollection(args[0].asString(), options);
+                }
             }
             return null;
         }
