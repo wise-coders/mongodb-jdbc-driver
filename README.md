@@ -26,7 +26,8 @@ The number of scanned documents can be set in the URL using the parameter scan=<
 
 ## License
 
-BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/wise-coders/mongodb-jdbc-driver.
+[GPL-3 dual license](https://opensource.org/licenses/GPL-3.0).  
+For any improvements please create merge requests to this repository.
 
 ## Download JDBC Driver Binary Distribution
 
@@ -88,7 +89,7 @@ In test cases we try to add all possible queries we want to support. If you find
 
 ## Contributors
 
-PLEASE HELP US TO IMPROVE THIS DRIVER BY ADDING FIXES AND CREATE PULL REQUESTS. 
+Please help us to improve this driver by adding fixes and create merge requests to this repository. 
 
 ## How to Test the Driver
 
