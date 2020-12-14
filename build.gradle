@@ -56,6 +56,12 @@ task zip(type: Zip, dependsOn:['clean','jar']) {
     from configurations.runtime
 }
 
+task tar(type: Tar, dependsOn:['clean','jar']) {
+    archiveName 'MongoDbJdbcDriver.tar'
+    from configurations.runtime.allArtifacts.files
+    from configurations.runtime
+}
+
 /*
 task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtime.allArtifacts.files
