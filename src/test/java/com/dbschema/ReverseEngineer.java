@@ -3,10 +3,7 @@ package com.dbschema;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class ReverseEngineer extends AbstractTestCase {
     private Connection con;
@@ -28,7 +25,11 @@ public class ReverseEngineer extends AbstractTestCase {
 
     @Test
     public void testIndex() throws SQLException {
-        printResultSet( con.getMetaData().getColumns("sample4", "sample4", "airports", null));
-        printResultSet( con.getMetaData().getIndexInfo("sample4", "sample4", "words", false, false ));
+        ResultSet rs = con.getMetaData().getTables("local", "local", null, null );
+        while ( rs.next() ){
+            String colName = rs.getString(3);
+            printResultSet( con.getMetaData().getColumns("local", "local", colName, null));
+            printResultSet( con.getMetaData().getIndexInfo("local", "local", colName, false, false ));
+        }
     }
 }

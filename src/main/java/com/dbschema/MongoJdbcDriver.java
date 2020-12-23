@@ -22,7 +22,7 @@ import java.util.logging.SimpleFormatter;
  */
 public class MongoJdbcDriver implements Driver
 {
-    private DriverPropertyInfoHelper propertyInfoHelper = new DriverPropertyInfoHelper();
+    private final DriverPropertyInfoHelper propertyInfoHelper = new DriverPropertyInfoHelper();
 
     public static final Logger LOGGER = Logger.getLogger( MongoJdbcDriver.class.getName() );
 

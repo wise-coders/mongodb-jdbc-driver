@@ -167,6 +167,9 @@ public class WrappedMongoClient {
         int idx = collectionName.indexOf('.');
         if ( idx > -1 ) collectionName = collectionName.substring(0, idx );
 
+        if ( metaDatabases.isEmpty() ){
+            getDatabaseNames();
+        }
         MetaDatabase metaDatabase = metaDatabases.get( catalogName );
         if ( metaDatabase != null ) {
             MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
