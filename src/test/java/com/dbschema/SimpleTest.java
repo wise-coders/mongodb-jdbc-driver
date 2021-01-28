@@ -114,6 +114,12 @@ public class SimpleTest extends AbstractTestCase{
         printResultSet( stmt.executeQuery("local.persons.insert({ 'firstname' : 'Anna', 'lastname' : 'Pruteanu' })") );
         stmt.close();
     }
+    @Test
+    public void testInsertMany() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.testMany.insertMany( [{ 'hello' : '', 'qty454' : 0 }, { 'hello' : '', 'qty454' : 0 }])") );
+        stmt.close();
+    }
 
     @Test
     public void testISODate() throws Exception {

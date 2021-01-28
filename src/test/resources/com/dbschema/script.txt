@@ -4,3 +4,5 @@ db.sample.count();
 
 
 db.sample.find({name:'Anna'});
+
+db.testMany.insertMany( [{ "hello" : "", "qty454" : 0 }, { "hello" : "", "qty454" : 0 }])

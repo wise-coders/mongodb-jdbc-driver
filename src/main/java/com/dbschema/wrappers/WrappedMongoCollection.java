@@ -442,6 +442,13 @@ public class WrappedMongoCollection<TDocument> {
     }
 
 
+    public void insertMany(Object[] arr) {
+        for ( Object obj: arr ){
+            insertOne( (Map)obj );
+        }
+    }
+
+
     public void insertMany(Object map) {
         if ( map instanceof List ){
             for ( Map map1: (List<Map>)map ){
