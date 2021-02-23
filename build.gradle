@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.mongodb:mongo-java-driver:3.12.7"
+    compile "org.mongodb:mongo-java-driver:3.12.8"
     compile "org.graalvm.js:js:20.2.0"
     compile "org.graalvm.js:js-scriptengine:20.2.0"
     compile "com.google.code.gson:gson:2.8.6"

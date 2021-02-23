@@ -14,7 +14,7 @@ public class Util {
 
     public static Bson toBson(Object obj ){
         if ( obj instanceof Map){
-            return new BasicDBObject(doMapConversions((Map)obj) );
+            return new BasicDBObject(convert((Map)obj) );
         } else {
             String json = new Gson().toJson(obj);
             return obj != null ? BasicDBObject.parse(json) : null;
@@ -23,14 +23,15 @@ public class Util {
 
     private static final Pattern HEXADECIMAL_PATTERN = Pattern.compile("\\p{XDigit}+");
 
-    public static Map doMapConversions(Map map){
+    public static Map convert(Map map){
         for (Object key : map.keySet()){
             Object value = map.get( key );
-            if ( value instanceof Map ){
-                doMapConversions((Map) value);
-            }
-            if ( value instanceof Map && canConvertMapToArray( (Map)value )){
-                map.put( key, convertMapToArray((Map) value));
+            if ( value instanceof Map ) {
+                if (mapIsArray((Map) value)) {
+                    map.put(key, mapToArray((Map) value));
+                } else {
+                    convert((Map) value);
+                }
             }
             if ( "_id".equals(key) && value instanceof String && HEXADECIMAL_PATTERN.matcher((String)value).matches() ){
                 map.put( "_id", new ObjectId((String)value));
@@ -40,15 +41,18 @@ public class Util {
     }
 
 
-    private static boolean canConvertMapToArray( Map map ) {
+    private static boolean mapIsArray(Map map ) {
         return map.isEmpty() && map.get("0") != null;
     }
 
-    private static List<Object> convertMapToArray(Map map ) {
+    private static List<Object> mapToArray(Map map ) {
         final ArrayList<Object> array = new ArrayList<>();
         int i = 0;
         Object obj;
         while ( ( obj = map.get("" + i) ) != null ){
+            if ( obj instanceof Map ){
+                convert( (Map)obj );
+            }
             array.add( obj );
             i++;
         }
@@ -57,7 +61,7 @@ public class Util {
 
 
     public static List toBsonList(Object source ){
-        if ( source instanceof Map && canConvertMapToArray((Map)source)){
+        if ( source instanceof Map && mapIsArray((Map)source)){
             Map sourceMap = (Map)source;
             ArrayList array = new ArrayList();
             for ( int i = 0; i < sourceMap.size(); i++ ){

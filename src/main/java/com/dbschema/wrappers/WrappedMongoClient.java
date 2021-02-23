@@ -225,7 +225,6 @@ public class WrappedMongoClient {
         return list;
     }
 
-
     private MetaCollection discoverCollection(MetaDatabase metaDatabase, String collectionName){
         final WrappedMongoDatabase mongoDatabase = getDatabase(metaDatabase.name);
         if ( mongoDatabase != null ){
@@ -270,7 +269,7 @@ public class WrappedMongoClient {
                                     if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
                                         solvedFields.add( metaField );
                                         metaField.createReferenceTo(_metaCollection);
-                                        System.out.println("Found ref " + metaField.parentJson.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
+                                        System.out.println("Found ref " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
                                     }
                                 }
                             }

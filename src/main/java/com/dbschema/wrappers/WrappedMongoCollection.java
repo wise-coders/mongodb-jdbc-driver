@@ -35,9 +35,8 @@ public class WrappedMongoCollection<TDocument> {
         this.mongoCollection = base;
     }
 
-
     private TDocument toDocument( Map map ){
-        return (TDocument)( new Document( Util.doMapConversions(map) ));
+        return (TDocument)( new Document( Util.convert(map) ));
     }
 
     @Override
@@ -748,11 +747,11 @@ public class WrappedMongoCollection<TDocument> {
         return mongoCollection.createIndex( toBson( keys ), indexOptions );
     }
 
-    private final String PARTIAL_FILTER_EXPRESSION_KEY = "partialFilterExpression";
-    private final String NAME_KEY = "name";
-    private final String SPARSE_KEY = "sparse";
-    private final String UNIQUE_KEY = "unique";
-    private final String EXPIRE_AFTER_SECONDS_KEY = "expireAfterSeconds";
+    private static final String PARTIAL_FILTER_EXPRESSION_KEY = "partialFilterExpression";
+    private static final String NAME_KEY = "name";
+    private static final String SPARSE_KEY = "sparse";
+    private static final String UNIQUE_KEY = "unique";
+    private static final String EXPIRE_AFTER_SECONDS_KEY = "expireAfterSeconds";
 
 
     public String createIndex(Map keys, Map options ) {

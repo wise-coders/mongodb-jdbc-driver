@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 /**
  * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
  */
-public class MetaCollection extends MetaJson {
+public class MetaCollection extends MetaObject {
 
     private boolean isFirstDiscover = true;
     public boolean referencesDiscovered = false;
@@ -55,7 +55,6 @@ public class MetaCollection extends MetaJson {
         return index;
     }
 
-
     private boolean discoverCollectionFirstRecords( WrappedMongoCollection mongoCollection, int iterations ) {
         MongoCursor cursor = mongoCollection.find().iterator();
         int iteration = 0;
@@ -79,47 +78,47 @@ public class MetaCollection extends MetaJson {
         }
     }
 
-    private void discoverMap(MetaJson parentMap, Object object){
-        if ( object instanceof Map){
-            Map map = (Map)object;
+    private void discoverMap(MetaObject parentObject, Object objValue){
+        if ( objValue instanceof Map){
+            Map map = (Map)objValue;
             for ( Object key : map.keySet() ){
-                final Object value = map.get( key );
-                String type =( value != null ? value.getClass().getName() : "String" );
+                final Object keyValue = map.get( key );
+                String type =( keyValue != null ? keyValue.getClass().getName() : "String" );
                 if ( type.lastIndexOf('.') > 0 ) type = type.substring( type.lastIndexOf('.')+1 );
-                if ( value instanceof Map ) {
-                    Map subMap = (Map)value;
+                if ( keyValue instanceof Map ) {
+                    Map subMap = (Map)keyValue;
                     // "suburbs":[ { name: "Scarsdale" }, { name: "North Hills" } ] WOULD GENERATE SUB-ENTITIES 0,1,2,... FOR EACH LIST ENTRY. SKIP THIS
                     if ( allKeysAreNumbers( subMap )){
-                        final MetaJson childrenMap = parentMap.createJsonArrayField(key.toString(), isFirstDiscover );
+                        final MetaObject childrenMap = parentObject.createJsonArrayField(key.toString(), isFirstDiscover );
                         for ( Object subKey : subMap.keySet() ) {
                             discoverMap(childrenMap, subMap.get( subKey ));
                         }
                     } else {
-                        final MetaJson childrenMap = parentMap.createJsonObjectField(key.toString(), isFirstDiscover );
+                        final MetaObject childrenMap = parentObject.createJsonObjectField(key.toString(), isFirstDiscover );
                         if ( subMap.size() > 1 ){
                             childrenMap.setTypeArray();
                         }
-                        discoverMap(childrenMap, value);
+                        discoverMap(childrenMap, keyValue);
                     }
-                } else if ( value instanceof List ){
-                    final List list = (List)value;
-                    if ( (list.isEmpty() || isListOfDocuments(value))  ) {
-                        final MetaJson subDocument = parentMap.createJsonArrayField(key.toString(), isFirstDiscover );
-                        for ( Object child : (List)value ){
+                } else if ( keyValue instanceof List ){
+                    final List list = (List)keyValue;
+                    if ( (list.isEmpty() || isListOfDocuments(keyValue))  ) {
+                        final MetaObject subDocument = parentObject.createJsonArrayField(key.toString(), isFirstDiscover );
+                        for ( Object child : (List)keyValue ){
                             discoverMap(subDocument, child);
                         }
                     } else {
-                        parentMap.createField((String) key, "array", MetaJson.TYPE_ARRAY, isFirstDiscover );
+                        parentObject.createField((String) key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover );
                     }
                 } else {
-                    MetaField field = parentMap.createField((String) key, type, getJavaType( value ), isFirstDiscover );
+                    MetaField field = parentObject.createField((String) key, type, getJavaType( keyValue ), isFirstDiscover );
                     // VALUES WHICH ARE OBJECTID AND ARE NOT _id IN THE ROOT MAP
-                    if ( value instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
-                        field.addObjectId((ObjectId) value);
+                    if ( keyValue instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
+                        field.addObjectId((ObjectId) keyValue);
                     }
                 }
             }
-            for ( MetaField field: parentMap.fields){
+            for ( MetaField field: parentObject.fields){
                 if ( !map.containsKey( field.name )){
                     field.setMandatory( false );
                 }
@@ -178,10 +177,10 @@ public class MetaCollection extends MetaJson {
                         MetaIndex metaIndex = createMetaIndex(indexName, indexIsPk, indexIsUnique);
                         for ( Object fieldNameObj : columnsMap.keySet() ){
                             final MetaField metaField = findField((String) fieldNameObj);
-                            if ( metaField != null ) {
-                                metaIndex.addColumn( metaField );
-                            } else {
+                            if (metaField == null) {
                                 System.out.println("MongoJDBC discover index cannot find metaField '" + fieldNameObj + "' for index " + indexObject );
+                            } else {
+                                metaIndex.addColumn( metaField );
                             }
                         }
                     }

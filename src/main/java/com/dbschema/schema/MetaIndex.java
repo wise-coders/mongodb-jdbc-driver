@@ -9,12 +9,12 @@ import java.util.List;
  */
 public class MetaIndex {
 
-    private final MetaJson metaMap;
+    private final MetaObject metaMap;
     public final String name;
     public final List<MetaField> metaFields = new ArrayList<MetaField>();
     public final boolean pk, unique;
 
-    MetaIndex(MetaJson metaMap, String name, boolean pk, boolean unique){
+    MetaIndex(MetaObject metaMap, String name, boolean pk, boolean unique){
         this.metaMap = metaMap;
         this.name = name;
         this.pk = pk;

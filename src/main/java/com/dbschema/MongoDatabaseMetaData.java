@@ -153,8 +153,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 null, // "SOURCE_DATA_TYPE", (not a DISTINCT or REF type)
                 "NO" // "IS_AUTOINCREMENT" (can be auto-generated, but can also be specified)
         });
-        if( field instanceof MetaJson){
-            MetaJson json = (MetaJson)field;
+        if( field instanceof MetaObject){
+            MetaObject json = (MetaObject)field;
             for ( MetaField children : json.fields){
                 exportColumnsRecursive( collection, result,  children );
             }
@@ -1276,8 +1276,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 });
             }
         }
-        if ( fromFiled instanceof MetaJson){
-            for ( MetaField field : ((MetaJson) fromFiled).fields ){
+        if ( fromFiled instanceof MetaObject){
+            for ( MetaField field : ((MetaObject) fromFiled).fields ){
                 getExportedKeysRecursive(result, pkCollection, fromCollection, field);
             }
         }
@@ -1324,8 +1324,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                     ""+DatabaseMetaData.importedKeyInitiallyImmediate //DEFERRABILITY
             });
         }
-        if ( fromFiled instanceof MetaJson){
-            for ( MetaField field : ((MetaJson) fromFiled).fields ){
+        if ( fromFiled instanceof MetaObject){
+            for ( MetaField field : ((MetaObject) fromFiled).fields ){
                 getImportedKeysRecursive(result, field);
             }
         }

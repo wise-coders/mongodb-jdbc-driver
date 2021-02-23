@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class MetaField {
 
-    public final MetaJson parentJson;
+    public final MetaObject parentObject;
     public final String name, typeName;
     public final List<ObjectId> objectIds = new ArrayList<ObjectId>();
     public final int type;
@@ -19,8 +19,8 @@ public class MetaField {
     private boolean mandatory = true;
 
 
-    MetaField(final MetaJson parentJson, final String name, final String typeName, int type ){
-        this.parentJson = parentJson;
+    MetaField(final MetaObject parentObject, final String name, final String typeName, int type ){
+        this.parentObject = parentObject;
         this.name = name;
         this.typeName = typeName;
         this.type = type;
@@ -33,7 +33,7 @@ public class MetaField {
     }
 
     public String getNameWithPath(){
-        return ( parentJson != null && !(parentJson instanceof MetaCollection ) ? parentJson.getNameWithPath() + "." + name : name );
+        return ( parentObject != null && !(parentObject instanceof MetaCollection ) ? parentObject.getNameWithPath() + "." + name : name );
     }
 
     public String getPkColumnName(){
@@ -54,7 +54,7 @@ public class MetaField {
     public MetaCollection getMetaCollection(){
         MetaField field = this;
         while ( field != null && !( field instanceof MetaCollection )){
-            field = field.parentJson;
+            field = field.parentObject;
         }
         return (MetaCollection)field;
     }

@@ -10,7 +10,6 @@ import org.bson.Document;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
-import sun.java2d.pipe.ValidatePipe;
 
 import java.util.LinkedHashSet;
 import java.util.List;
