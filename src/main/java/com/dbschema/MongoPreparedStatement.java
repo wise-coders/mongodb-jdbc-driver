@@ -179,6 +179,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
             return lastResultSet;
         } catch ( Throwable ex ){
+            ex.printStackTrace();
             throw new SQLException( ex.getMessage(), ex );
         }
     }
@@ -221,10 +222,10 @@ public class MongoPreparedStatement implements PreparedStatement {
             documentParam = (Document)x;
         } else if ( x instanceof Map ){
             documentParam = new Document( (Map)x);
-        } else if ( x != null ) {
-            throw new SQLException("Map object expected. You currently did setObject( " + x.getClass().getName() + " ) ");
-        } else {
+        } else if (x == null) {
             throw new SQLException("Map object expected. You currently did setObject( NULL ) ");
+        } else {
+            throw new SQLException("Map object expected. You currently did setObject( " + x.getClass().getName() + " ) ");
         }
     }
 

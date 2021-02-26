@@ -1,7 +1,8 @@
 package com.dbschema;
 
 import com.dbschema.resultSet.ArrayResultSet;
-import com.dbschema.schema.*;
+import com.dbschema.structure.*;
+import com.dbschema.wrappers.WrappedMongoDatabase;
 
 import java.sql.*;
 import java.util.List;
@@ -109,7 +110,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         // every collection "table" has two columns - "_id" column which is the primary key, and a "document"
         // column which is the JSON document corresponding to the "_id". An "_id" value can be specified on
         // insert, or it can be omitted, in which case MongoDB generates a unique value.
-        MetaCollection collection = con.client.getMetaCollection(catalogName, tableNamePattern);
+        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableNamePattern);
 
         ArrayResultSet result = new ArrayResultSet();
         result.setColumnNames(new String[] { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME",
@@ -140,8 +141,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "0", // "DECIMAL_DIGITS",
                 "10", // "NUM_PREC_RADIX",
                 "" + ( field.isMandatory() ? columnNoNulls : columnNullable ), // "NULLABLE",
-                "", // "REMARKS",
-                "", // "COLUMN_DEF",
+                field.getDescription(), // "REMARKS",
+                field.getEnumAsString(), // "COLUMN_DEF",
                 "0", // "SQL_DATA_TYPE", (not used)
                 "0", // "SQL_DATETIME_SUB", (not used)
                 "800", // "CHAR_OCTET_LENGTH",
@@ -182,7 +183,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         result.setColumnNames(new String[] { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME",
                 "KEY_SEQ", "PK_NAME" });
 
-        final MetaCollection collection = con.client.getMetaCollection(catalogName, tableNamePattern);
+        final MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableNamePattern);
         if ( collection != null ){
             for ( MetaIndex index : collection.metaIndexes){
                 if ( index.pk ) {
@@ -250,7 +251,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "INDEX_QUALIFIER", "INDEX_NAME", "TYPE", "ORDINAL_POSITION", "COLUMN_NAME", "ASC_OR_DESC",
                 "CARDINALITY", "PAGES", "FILTER_CONDITION"});
 
-        MetaCollection collection = con.client.getMetaCollection(catalogName, tableNamePattern);
+        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableNamePattern);
 
         if ( collection != null ){
             for ( MetaIndex index : collection.metaIndexes){
@@ -1239,17 +1240,15 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         result.setColumnNames(new String[]{"PKTABLE_CAT", "PKTABLE_SCHEMA", "PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT", "FKTABLE_SCHEM",
                 "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"});
 
-        MetaCollection pkCollection = con.client.getMetaCollection(catalogName, tableNamePattern);
+        WrappedMongoDatabase db = con.client.getDatabase(catalogName);
+        MetaCollection pkCollection = db.getMetaCollection(tableNamePattern);
         if ( pkCollection != null ){
-            MetaDatabase metaDatabase = con.client.getMetaDatabase(catalogName);
-            if ( metaDatabase != null ) {
-                for (MetaCollection fromCollection : metaDatabase.getMetaCollections() ) {
-                    con.client.discoverReferences(fromCollection);
+                for (MetaCollection fromCollection : db.metaDatabase.getCollections() ) {
+                    db.discoverReferences(fromCollection);
                     for (MetaField fromFiled : fromCollection.fields) {
                         getExportedKeysRecursive(result, pkCollection, fromCollection, fromFiled);
                     }
                 }
-            }
         }
         return result;
     }
@@ -1294,9 +1293,10 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"});
 
 
-        MetaCollection fromCollection = con.client.getMetaCollection(catalogName, tableNamePattern);
+        WrappedMongoDatabase db = con.client.getDatabase(catalogName);
+        MetaCollection fromCollection = db.getMetaCollection( tableNamePattern);
         if ( fromCollection != null ){
-            con.client.discoverReferences(fromCollection);
+            db.discoverReferences(fromCollection);
             for ( MetaField fromFiled : fromCollection.fields ){
                 getImportedKeysRecursive(result, fromFiled);
             }

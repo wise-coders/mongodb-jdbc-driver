@@ -200,5 +200,13 @@ public class SimpleTest extends AbstractTestCase{
         st.close();
     }
 
-
+    @Test
+    public void testRunCommand() throws Exception {
+        Statement st = con.createStatement();
+        st.execute("tournament.runCommand( { 'collMod': 'dragos1', \n" +
+                "                 'validationLevel': 'moderate', \n" +
+                "                 'validationAction': 'warn' \n" +
+                "} )");
+        st.close();
+    }
 }

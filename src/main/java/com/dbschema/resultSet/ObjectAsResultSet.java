@@ -19,7 +19,7 @@ public class ObjectAsResultSet implements ResultSet {
 
 
     @Override
-    public boolean next() throws SQLException {
+    public boolean next() {
         boolean _ret = hasNext;
         hasNext = false;
         return _ret;
@@ -30,7 +30,7 @@ public class ObjectAsResultSet implements ResultSet {
     }
 
     @Override
-    public boolean wasNull() throws SQLException {
+    public boolean wasNull() {
         return value == null;
     }
 

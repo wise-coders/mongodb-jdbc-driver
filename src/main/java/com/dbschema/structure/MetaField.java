@@ -1,4 +1,4 @@
-package com.dbschema.schema;
+package com.dbschema.structure;
 
 
 import org.bson.types.ObjectId;
@@ -17,6 +17,8 @@ public class MetaField {
     public final int type;
     public final List<MetaReference> references = new ArrayList<MetaReference>();
     private boolean mandatory = true;
+    public String enumAsString;
+    private String description;
 
 
     MetaField(final MetaObject parentObject, final String name, final String typeName, int type ){
@@ -75,5 +77,21 @@ public class MetaField {
 
     public boolean isMandatory(){
         return mandatory;
+    }
+
+    public void setEnumAsString(String enumAsString){
+        this.enumAsString = enumAsString;
+    }
+
+    public String getEnumAsString(){
+        return enumAsString;
+    }
+
+    public void setDescription( String description ){
+        this.description = description;
+    }
+
+    public String getDescription(){
+        return description;
     }
 }

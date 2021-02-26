@@ -1,4 +1,4 @@
-package com.dbschema.schema;
+package com.dbschema.structure;
 
 
 import java.util.ArrayList;

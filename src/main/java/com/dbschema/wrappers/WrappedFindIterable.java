@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.dbschema.Util.toBson;
+import static com.dbschema.GraalConvertor.toBson;
 
 
 /**

@@ -1,6 +1,6 @@
 package com.dbschema.wrappers;
 
-import com.dbschema.Util;
+import com.dbschema.GraalConvertor;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -20,23 +20,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.dbschema.Util.toBson;
-import static com.dbschema.Util.toBsonList;
+import static com.dbschema.GraalConvertor.toBson;
+import static com.dbschema.GraalConvertor.toList;
 
 /**
  * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
  */
 public class WrappedMongoCollection<TDocument> {
 
+    public final WrappedMongoDatabase wrappedMongoDatabase;
     private final MongoCollection<TDocument> mongoCollection;
 
 
-    WrappedMongoCollection(MongoCollection<TDocument> base ){
+    WrappedMongoCollection(WrappedMongoDatabase wrappedMongoDatabase, MongoCollection<TDocument> base ){
+        this.wrappedMongoDatabase = wrappedMongoDatabase;
         this.mongoCollection = base;
     }
 
     private TDocument toDocument( Map map ){
-        return (TDocument)( new Document( Util.convert(map) ));
+        return (TDocument)( new Document( GraalConvertor.convertMap(map) ));
     }
 
     @Override
@@ -292,7 +294,7 @@ public class WrappedMongoCollection<TDocument> {
     }
 
     public AggregateIterable aggregate(List pipeline) {
-        return mongoCollection.aggregate(toBsonList(pipeline));
+        return mongoCollection.aggregate(toList(pipeline));
     }
 
     public AggregateIterable aggregate(Object object) {
@@ -328,17 +330,17 @@ public class WrappedMongoCollection<TDocument> {
 
 
     public AggregateIterable aggregate(List pipeline, Class aClass) {
-        return mongoCollection.aggregate( toBsonList(pipeline), aClass );
+        return mongoCollection.aggregate( toList(pipeline), aClass );
     }
 
 
     public AggregateIterable aggregate(ClientSession clientSession, List pipeline) {
-        return mongoCollection.aggregate( clientSession, toBsonList(pipeline) );
+        return mongoCollection.aggregate( clientSession, toList(pipeline) );
     }
 
 
     public AggregateIterable aggregate(ClientSession clientSession, List pipeline, Class aClass) {
-        return mongoCollection.aggregate( clientSession, toBsonList(pipeline), aClass );
+        return mongoCollection.aggregate( clientSession, toList(pipeline), aClass );
     }
 
 

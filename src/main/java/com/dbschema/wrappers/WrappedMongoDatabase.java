@@ -1,20 +1,26 @@
 package com.dbschema.wrappers;
 
+import com.dbschema.GraalConvertor;
+import com.dbschema.ScanStrategy;
 import com.dbschema.Util;
+import com.dbschema.structure.MetaCollection;
+import com.dbschema.structure.MetaDatabase;
+import com.dbschema.structure.MetaField;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.ValidationOptions;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
+
+import static com.dbschema.MongoJdbcDriver.LOGGER;
 
 
 /**
@@ -23,11 +29,41 @@ import java.util.Set;
  */
 public class WrappedMongoDatabase implements ProxyObject {
 
-
     private final MongoDatabase mongoDatabase;
+    private final ScanStrategy scanStrategy;
+    public final MetaDatabase metaDatabase;
 
-    WrappedMongoDatabase(MongoDatabase mongoDatabase ){
+    WrappedMongoDatabase( MongoDatabase mongoDatabase, ScanStrategy scanStrategy ){
         this.mongoDatabase = mongoDatabase;
+        this.scanStrategy = scanStrategy;
+        this.metaDatabase = new MetaDatabase(mongoDatabase.getName());
+        for ( Document info : mongoDatabase.listCollections()){
+            Document definition = (Document) Util.getByPath(info, "options.validator.$jsonSchema");
+            if ( definition != null ){
+                final String name = info.getString("name");
+                final MetaCollection metaCollection = metaDatabase.createCollection( name );
+                metaCollection.visitValidatorNode( null, true, definition );
+            }
+        }
+    }
+
+
+    public MetaCollection getMetaCollection( String collectionName){
+        if ( collectionName == null || collectionName.length() == 0 ) return null;
+        int idx = collectionName.indexOf('.');
+        if ( idx > -1 ) collectionName = collectionName.substring(0, idx );
+
+        final MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
+        if (metaCollection == null) {
+            try {
+                return metaDatabase.createCollection( collectionName ).scanDocuments( getCollection(collectionName), scanStrategy );
+            } catch ( Throwable ex ){
+                LOGGER.log(Level.SEVERE, "Error discovering collection " + mongoDatabase.getName() + "." + collectionName + ". ", ex );
+            }
+        } else {
+            return metaCollection;
+        }
+        return null;
     }
 
     @Override
@@ -47,8 +83,12 @@ public class WrappedMongoDatabase implements ProxyObject {
             case "listCollections" : return new ListCollectionsProxyExecutable();
             case "getViewSource" : return new GetViewSourceProxyExecutable();
             case "getName" : return new GetNameProxyExecutable();
-            default: return new WrappedMongoCollection(mongoDatabase.getCollection( key ));
+            default: return getCollection( key );
         }
+    }
+
+    public WrappedMongoCollection<Document> getCollection(String collectionName) {
+        return new WrappedMongoCollection<>( this, mongoDatabase.getCollection(collectionName));
     }
 
     @Override
@@ -74,7 +114,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 3 && args[0].isString() && args[1].isString() && args[2].hasArrayElements()) {
-                mongoDatabase.createView(args[0].asString(), args[1].asString(), Util.toBsonList( args[2].as(List.class)) );
+                mongoDatabase.createView(args[0].asString(), args[1].asString(), GraalConvertor.toList( args[2].as(List.class)) );
             }
             return null;
         }
@@ -83,7 +123,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 1 && args[0].isString() ) {
-                return getCollection(args[0].asString());
+                return getCollection( args[0].asString() );
             }
             return null;
         }
@@ -96,16 +136,16 @@ public class WrappedMongoDatabase implements ProxyObject {
             }
             if( args.length == 2 && args[0].isString()){
                 if ( args[1].isHostObject() ) {
-                    mongoDatabase.createCollection(args[0].asString(), args[1].asHostObject());
+                    mongoDatabase.createCollection( args[0].asString(), args[1].asHostObject() );
                 }
                 final Map map = args[1].as(Map.class);
                 if ( map != null ){
                     CreateCollectionOptions options = new CreateCollectionOptions();
                     if ( map.containsKey("validator") ) {
-                        options.validationOptions(new ValidationOptions().validator(Util.toBson(map.get("validator"))));
+                        options.validationOptions(new ValidationOptions().validator(GraalConvertor.toBson(map.get("validator"))));
                     }
                     if ( map.containsKey("storageEngine") ) {
-                        options.storageEngineOptions(Util.toBson(map.get("storageEngine")));
+                        options.storageEngineOptions(GraalConvertor.toBson(map.get("storageEngine")));
                     }
                     if ( map.containsKey("capped") ) {
                         options.capped(Boolean.parseBoolean( String.valueOf( map.get("capped"))));
@@ -113,7 +153,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                     if ( map.containsKey("max") ) {
                         options.maxDocuments(Long.parseLong( String.valueOf( map.get("max"))));
                     }
-                    mongoDatabase.createCollection(args[0].asString(), options);
+                    mongoDatabase.createCollection( args[0].asString(), options);
                 }
             }
             return null;
@@ -122,8 +162,8 @@ public class WrappedMongoDatabase implements ProxyObject {
     private class RunCommandProxyExecutable implements ProxyExecutable{
         @Override
         public Object execute(Value... args) {
-            if( args.length == 1 && args[0].hasArrayElements() ) {
-                mongoDatabase.runCommand( Util.toBson( args[2].as(List.class)) );
+            if( args.length == 1 ) {
+                mongoDatabase.runCommand( GraalConvertor.toBson( args[0].as(Map.class)) );
             }
             return null;
         }
@@ -214,8 +254,36 @@ public class WrappedMongoDatabase implements ProxyObject {
         mongoDatabase.createCollection( s );
     }
 
-    public WrappedMongoCollection<Document> getCollection(String s) {
-        return new WrappedMongoCollection<>(mongoDatabase.getCollection(s ));
+    public void discoverReferences(MetaCollection master ){
+        if ( !master.referencesDiscovered){
+            try {
+                master.referencesDiscovered = true;
+                final List<MetaField> unsolvedFields = new ArrayList<>();
+                final List<MetaField> solvedFields = new ArrayList<>();
+                master.collectFieldsWithObjectId(unsolvedFields);
+                if ( !unsolvedFields.isEmpty() ){
+                    for ( MetaCollection _metaCollection : metaDatabase.getCollections() ){
+                        final WrappedMongoCollection mongoCollection = getCollection( _metaCollection.name );
+                        if ( mongoCollection != null ){
+                            for ( MetaField metaField : unsolvedFields ){
+                                for ( ObjectId objectId : metaField.objectIds){
+                                    final Document query = new Document(); //new BasicDBObject();
+                                    query.put("_id", objectId);
+                                    if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
+                                        solvedFields.add( metaField );
+                                        metaField.createReferenceTo(_metaCollection);
+                                        System.out.println("Found ref " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch ( Throwable ex ){
+                LOGGER.log( Level.SEVERE, "Error in discover foreign keys", ex );
+            }
+        }
     }
+
 }
 
