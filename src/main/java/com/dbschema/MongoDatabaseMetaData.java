@@ -142,7 +142,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "10", // "NUM_PREC_RADIX",
                 "" + ( field.isMandatory() ? columnNoNulls : columnNullable ), // "NULLABLE",
                 field.getDescription(), // "REMARKS",
-                field.getEnumAsString(), // "COLUMN_DEF",
+                field.getOptions(), // "COLUMN_DEF",
                 "0", // "SQL_DATA_TYPE", (not used)
                 "0", // "SQL_DATETIME_SUB", (not used)
                 "800", // "CHAR_OCTET_LENGTH",

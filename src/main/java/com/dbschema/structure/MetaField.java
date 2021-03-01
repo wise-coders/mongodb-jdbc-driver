@@ -17,7 +17,7 @@ public class MetaField {
     public final int type;
     public final List<MetaReference> references = new ArrayList<MetaReference>();
     private boolean mandatory = true;
-    public String enumAsString;
+    public String options;
     private String description;
 
 
@@ -79,12 +79,12 @@ public class MetaField {
         return mandatory;
     }
 
-    public void setEnumAsString(String enumAsString){
-        this.enumAsString = enumAsString;
+    public void setOptions(String options){
+        this.options = options;
     }
 
-    public String getEnumAsString(){
-        return enumAsString;
+    public String getOptions(){
+        return options;
     }
 
     public void setDescription( String description ){

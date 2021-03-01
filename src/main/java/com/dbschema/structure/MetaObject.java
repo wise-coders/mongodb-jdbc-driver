@@ -109,6 +109,9 @@ public class MetaObject extends MetaField {
                 default: {
                     MetaField metaField = createField(name, bsonType, Util.getJavaType(bsonType), mandatory);
                     metaField.setDescription( bsonDefinition.getString("description") );
+                    if ( bsonDefinition.containsKey("pattern"))metaField.setOptions("pattern:'" + bsonDefinition.get("pattern")  +"'");
+                    else if ( bsonDefinition.containsKey("minimum"))metaField.setOptions("minimum:" + bsonDefinition.get("minimum"));
+                    else if ( bsonDefinition.containsKey("maximum"))metaField.setOptions("maximum:" + bsonDefinition.get("maximum"));
                 }
                 break;
             }
@@ -118,18 +121,20 @@ public class MetaObject extends MetaField {
             if ( anEnum.startsWith("[") && anEnum.endsWith("]")){
                 anEnum = anEnum.substring( 1, anEnum.length()-1);
             }
-            field.setEnumAsString(anEnum);
+            field.setOptions("enum:" + anEnum);
             field.setDescription( bsonDefinition.getString("description") );
         }
     }
 
 
     private void visitValidatorFields(Document document, List<String> requiredFields) {
-        for (Map.Entry<String, Object> entry : document.entrySet()) {
-            String fieldName = entry.getKey();
-            Document fieldDefinition = (Document) entry.getValue();
-            boolean mandatory = requiredFields != null && requiredFields.contains(fieldName);
-            visitValidatorNode( fieldName, mandatory, fieldDefinition);
+        if ( document != null ) {
+            for (Map.Entry<String, Object> entry : document.entrySet()) {
+                String fieldName = entry.getKey();
+                Document fieldDefinition = (Document) entry.getValue();
+                boolean mandatory = requiredFields != null && requiredFields.contains(fieldName);
+                visitValidatorNode(fieldName, mandatory, fieldDefinition);
+            }
         }
     }
 

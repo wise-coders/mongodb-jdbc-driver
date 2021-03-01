@@ -123,6 +123,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 1 && args[0].isString() ) {
+                System.out.println("Getting collection " + args[0].asString() + " " + getCollection( args[0].asString() ));
                 return getCollection( args[0].asString() );
             }
             return null;
