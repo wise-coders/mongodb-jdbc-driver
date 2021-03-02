@@ -65,32 +65,32 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "REF_GENERATION"});
         if ( catalogName == null ){
             for ( String cat : con.client.getDatabaseNames() ) {
-                for (String tableName : con.client.getCollectionNames( cat ) ) {
-                    resultSet.addRow( createTableRow( catalogName, tableName, "TABLE") );
-                }
-                for (String tableName : con.client.getViewNames( cat ) ) {
-                    resultSet.addRow( createTableRow( catalogName, tableName, "VIEW") );
-                }
+                getTablesByCatalogName(cat, resultSet);
             }
         } else {
-            for (String tableName : con.client.getCollectionNames( catalogName ) ) {
-                resultSet.addRow( createTableRow( catalogName, tableName, "TABLE") );
-            }
-            for (String tableName : con.client.getViewNames( catalogName ) ) {
-                resultSet.addRow( createTableRow( catalogName, tableName, "VIEW") );
-            }
+            getTablesByCatalogName(catalogName, resultSet);
         }
         return resultSet;
 
     }
 
+    private void getTablesByCatalogName(String catalogName, ArrayResultSet resultSet) {
+        for (String tableName : con.client.getCollectionNames(catalogName)) {
+            resultSet.addRow(createTableRow(catalogName, tableName, "TABLE"));
+        }
+        for (String tableName : con.client.getViewNames(catalogName)) {
+            resultSet.addRow(createTableRow(catalogName, tableName, "VIEW"));
+        }
+    }
+
     private String[] createTableRow( String catalogName, String tableName, String type ){
+        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
         String[] data = new String[10];
         data[0] = catalogName; // TABLE_CAT
         data[1] = ""; // TABLE_SCHEM
         data[2] = tableName; // TABLE_NAME
         data[3] = type; // TABLE_TYPE
-        data[4] = ""; // REMARKS
+        data[4] = collection != null ? collection.getDescription() : null; // REMARKS
         data[5] = ""; // TYPE_CAT
         data[6] = ""; // TYPE_SCHEM
         data[7] = ""; // TYPE_NAME
