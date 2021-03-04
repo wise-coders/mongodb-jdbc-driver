@@ -171,7 +171,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 1 ) {
-                mongoDatabase.runCommand( GraalConvertor.toBson( args[0].as(Map.class)) );
+                return mongoDatabase.runCommand( GraalConvertor.toBson( args[0].as(Map.class)) );
             }
             return null;
         }
