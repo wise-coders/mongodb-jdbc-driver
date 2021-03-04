@@ -153,14 +153,12 @@ public class WrappedMongoClient {
 
 
     public List<String> getCollectionNames(String databaseName) {
-        List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<String>();
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
             if ( db != null ){
-                for ( Document doc : db.listCollections()){
-                    if ( doc.containsKey("type") && "collection".equals(doc.get("type"))){
-                        list.add( String.valueOf( doc.get("name")) );
-                    }
+                for ( String name : db.listCollectionNames() ){
+                    list.add( name );
                 }
             }
             list.remove("system.indexes");

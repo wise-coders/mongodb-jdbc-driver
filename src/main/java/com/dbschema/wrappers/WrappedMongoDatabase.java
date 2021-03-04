@@ -6,6 +6,7 @@ import com.dbschema.Util;
 import com.dbschema.structure.MetaCollection;
 import com.dbschema.structure.MetaDatabase;
 import com.dbschema.structure.MetaField;
+import com.google.gson.GsonBuilder;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
@@ -42,7 +43,13 @@ public class WrappedMongoDatabase implements ProxyObject {
             if ( definition != null ){
                 final String name = info.getString("name");
                 final MetaCollection metaCollection = metaDatabase.createCollection( name );
-                metaCollection.visitValidatorNode( null, true, definition );
+                System.out.println("--- Collection " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n") ;
+                try {
+                    metaCollection.visitValidatorNode(null, true, definition);
+                } catch ( Throwable ex ){
+                    metaDatabase.dropCollection( name );
+                    Thread.dumpStack();
+                }
             }
         }
     }

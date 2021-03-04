@@ -89,25 +89,31 @@ public class MetaObject extends MetaField {
             String bsonType = Util.getBsonType( bsonDefinition );
             switch (bsonType) {
                 case "object": {
-                    MetaObject intoObject = (name != null) ? createObjectField(name, mandatory) : this;
+                    final MetaObject intoObject = (name != null) ? createObjectField(name, mandatory) : this;
                     intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class));
                     intoObject.setDescription( bsonDefinition.getString("description"));
                 }
                 break;
                 case "array": {
-                    Document itemsDefinition = (Document) bsonDefinition.get("items");
-                    String itemType = Util.getBsonType( itemsDefinition );
-                    Document objDefinition = (Document) itemsDefinition.get("properties");
+                    final Document itemsDefinition = (Document) bsonDefinition.get("items");
+                    if ( itemsDefinition != null ) {
+                        String itemType = Util.getBsonType(itemsDefinition);
 
-                    MetaObject intoObject = (name != null) ? createArrayField(name, "array[" + itemType + "]", mandatory) : this;
-                    intoObject.setDescription( bsonDefinition.getString("description"));
-                    if ( objDefinition != null ) {
-                        intoObject.visitValidatorFields(objDefinition, bsonDefinition.getList("required", String.class));
+                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[" + itemType + "]", mandatory) : this;
+                        intoObject.setDescription(bsonDefinition.getString("description"));
+                        final Document objDefinition = (Document) itemsDefinition.get("properties");
+                        if (objDefinition != null) {
+                            intoObject.visitValidatorFields(objDefinition, bsonDefinition.getList("required", String.class));
+                        }
+                    } else if ( bsonDefinition.get("properties") != null ){
+                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[object]", mandatory) : this;
+                        intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class));
+                        intoObject.setDescription( bsonDefinition.getString("description"));
                     }
                 }
                 break;
                 default: {
-                    MetaField metaField = createField(name, bsonType, Util.getJavaType(bsonType), mandatory);
+                    final MetaField metaField = createField(name, bsonType, Util.getJavaType(bsonType), mandatory);
                     metaField.setDescription( bsonDefinition.getString("description") );
                     if ( bsonDefinition.containsKey("pattern"))metaField.setOptions("pattern:'" + bsonDefinition.get("pattern")  +"'");
                     else if ( bsonDefinition.containsKey("minimum"))metaField.setOptions("minimum:" + bsonDefinition.get("minimum"));
@@ -116,7 +122,7 @@ public class MetaObject extends MetaField {
                 break;
             }
         } else {
-            MetaField field = createField(name, "enum", Types.ARRAY, mandatory);
+            final MetaField field = createField(name, "enum", Types.ARRAY, mandatory);
             String anEnum = new GsonBuilder().create().toJson(bsonDefinition.getList("enum", Object.class));
             if ( anEnum.startsWith("[") && anEnum.endsWith("]")){
                 anEnum = anEnum.substring( 1, anEnum.length()-1);
@@ -130,10 +136,10 @@ public class MetaObject extends MetaField {
     private void visitValidatorFields(Document document, List<String> requiredFields) {
         if ( document != null ) {
             for (Map.Entry<String, Object> entry : document.entrySet()) {
-                String fieldName = entry.getKey();
-                Document fieldDefinition = (Document) entry.getValue();
-                boolean mandatory = requiredFields != null && requiredFields.contains(fieldName);
-                visitValidatorNode(fieldName, mandatory, fieldDefinition);
+                if ( entry.getValue() != null ) {
+                    boolean mandatory = requiredFields != null && requiredFields.contains(entry.getKey());
+                    visitValidatorNode(entry.getKey(), mandatory, (Document) entry.getValue());
+                }
             }
         }
     }

@@ -26,4 +26,8 @@ public class MetaDatabase {
     public Collection<MetaCollection> getCollections(){
         return collections.values();
     }
+
+    public void dropCollection( String name ){
+        collections.remove( name );
+    }
 }
