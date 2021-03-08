@@ -7,10 +7,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Properties;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 
 /**
@@ -36,7 +33,12 @@ public class MongoJdbcDriver implements Driver
 
             LOGGER.setLevel(Level.FINEST);
             LOGGER.addHandler(consoleHandler);
-        } catch ( SQLException ex ){
+
+            final FileHandler fileHandler = new FileHandler(System.getProperty("user.home") + "/.DbSchema/logs/MongoDbJdbcDriver.log");
+            fileHandler.setFormatter( new SimpleFormatter());
+            LOGGER.addHandler(fileHandler);
+
+        } catch ( Exception ex ){
             ex.printStackTrace();
         }
     }
