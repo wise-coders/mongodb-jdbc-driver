@@ -1,6 +1,7 @@
 package com.dbschema.wrappers;
 
 import com.dbschema.GraalConvertor;
+import com.dbschema.MongoJdbcDriver;
 import com.dbschema.ScanStrategy;
 import com.dbschema.Util;
 import com.dbschema.structure.MetaCollection;
@@ -20,6 +21,7 @@ import org.graalvm.polyglot.proxy.ProxyObject;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.dbschema.MongoJdbcDriver.LOGGER;
 
@@ -34,6 +36,8 @@ public class WrappedMongoDatabase implements ProxyObject {
     private final ScanStrategy scanStrategy;
     public final MetaDatabase metaDatabase;
 
+    public static final Logger LOGGER = Logger.getLogger( WrappedMongoDatabase.class.getName() );
+
     WrappedMongoDatabase( MongoDatabase mongoDatabase, ScanStrategy scanStrategy ){
         this.mongoDatabase = mongoDatabase;
         this.scanStrategy = scanStrategy;
@@ -43,12 +47,12 @@ public class WrappedMongoDatabase implements ProxyObject {
             if ( definition != null ){
                 final String name = info.getString("name");
                 final MetaCollection metaCollection = metaDatabase.createCollection( name );
-                System.out.println("--- Collection " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n") ;
+                LOGGER.log(Level.INFO, "--- Collection " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n"); ;
                 try {
                     metaCollection.visitValidatorNode(null, true, definition);
                 } catch ( Throwable ex ){
+                    LOGGER.log(Level.SEVERE, "Error parsing validation rule.", ex );
                     metaDatabase.dropCollection( name );
-                    Thread.dumpStack();
                 }
             }
         }
@@ -130,7 +134,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         @Override
         public Object execute(Value... args) {
             if( args.length == 1 && args[0].isString() ) {
-                System.out.println("Getting collection " + args[0].asString() + " " + getCollection( args[0].asString() ));
+                LOGGER.log(Level.INFO, "Get collection " + args[0].asString() + " " + getCollection( args[0].asString() ));
                 return getCollection( args[0].asString() );
             }
             return null;
@@ -280,7 +284,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                                     if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
                                         solvedFields.add( metaField );
                                         metaField.createReferenceTo(_metaCollection);
-                                        System.out.println("Found ref " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
+                                        LOGGER.log(Level.INFO, "Found virtual relation  " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
                                     }
                                 }
                             }

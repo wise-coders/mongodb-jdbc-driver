@@ -115,9 +115,9 @@ public class MetaObject extends MetaField {
                 default: {
                     final MetaField metaField = createField(name, bsonType, Util.getJavaType(bsonType), mandatory);
                     metaField.setDescription( bsonDefinition.getString("description") );
-                    if ( bsonDefinition.containsKey("pattern"))metaField.setOptions("pattern:'" + bsonDefinition.get("pattern")  +"'");
-                    else if ( bsonDefinition.containsKey("minimum"))metaField.setOptions("minimum:" + bsonDefinition.get("minimum"));
-                    else if ( bsonDefinition.containsKey("maximum"))metaField.setOptions("maximum:" + bsonDefinition.get("maximum"));
+                    if ( bsonDefinition.containsKey("pattern"))metaField.addOption("pattern:'" + bsonDefinition.get("pattern")  +"'");
+                    if ( bsonDefinition.containsKey("minimum"))metaField.addOption("minimum:" + bsonDefinition.get("minimum"));
+                    if ( bsonDefinition.containsKey("maximum"))metaField.addOption("maximum:" + bsonDefinition.get("maximum"));
                 }
                 break;
             }
@@ -127,7 +127,7 @@ public class MetaObject extends MetaField {
             if ( anEnum.startsWith("[") && anEnum.endsWith("]")){
                 anEnum = anEnum.substring( 1, anEnum.length()-1);
             }
-            field.setOptions("enum:" + anEnum);
+            field.addOption("enum:" + anEnum);
             field.setDescription( bsonDefinition.getString("description") );
         }
     }

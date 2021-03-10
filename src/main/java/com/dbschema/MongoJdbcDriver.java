@@ -123,19 +123,4 @@ public class MongoJdbcDriver implements Driver
         return null;
     }
 
-
-    public static void logClassLoader( Class cls ){
-        ClassLoader cl = cls.getClassLoader();
-        StringBuilder sb = new StringBuilder("#### DRV ").append( cls ).append(" ###");
-        do {
-            sb.append("\n\t").append( cl ).append( " ");
-            if ( cl instanceof URLClassLoader){
-                URLClassLoader ucl = (URLClassLoader)cl;
-                for( URL url : ucl.getURLs()){
-                    sb.append( url ).append(" ");
-                }
-            }
-        } while ( ( cl = cl.getParent() ) != null );
-        System.out.println( sb  );
-    }
 }

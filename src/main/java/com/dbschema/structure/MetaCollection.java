@@ -1,5 +1,6 @@
 package com.dbschema.structure;
 
+import com.dbschema.MongoJdbcDriver;
 import com.dbschema.ScanStrategy;
 import com.dbschema.wrappers.WrappedFindIterable;
 import com.dbschema.wrappers.WrappedMongoCollection;
@@ -10,6 +11,8 @@ import org.bson.Document;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
@@ -20,6 +23,8 @@ public class MetaCollection extends MetaObject {
     public final MetaDatabase metaDatabase;
 
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
+
+    public static final Logger LOGGER = Logger.getLogger( MetaCollection.class.getName() );
 
     public MetaCollection( final MetaDatabase metaDatabase, final String name ){
         super( null, name, "object", TYPE_OBJECT);
@@ -97,7 +102,7 @@ public class MetaCollection extends MetaObject {
                         for ( Object fieldNameObj : columnsMap.keySet() ){
                             final MetaField metaField = findField((String) fieldNameObj);
                             if (metaField == null) {
-                                System.out.println("MongoJDBC discover index cannot find metaField '" + fieldNameObj + "' for index " + indexObject );
+                                LOGGER.log(Level.INFO, "MongoJDBC discover index cannot find metaField '" + fieldNameObj + "' for index " + indexObject );
                             } else {
                                 metaIndex.addColumn( metaField );
                             }
@@ -106,7 +111,7 @@ public class MetaCollection extends MetaObject {
                 }
             }
         } catch ( Throwable ex ){
-            System.out.println("Error in discover indexes " + getNameWithPath() + ". " + ex );
+            LOGGER.log( Level.SEVERE, "Error in discover indexes " + getNameWithPath() + ". ", ex );
         }
     }
 

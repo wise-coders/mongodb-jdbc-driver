@@ -79,8 +79,12 @@ public class MetaField {
         return mandatory;
     }
 
-    public void setOptions(String options){
-        this.options = options;
+    public void addOption(String options){
+        if ( this.options == null ) {
+            this.options = options;
+        } else {
+            this.options += ", " + options;
+        }
     }
 
     public String getOptions(){

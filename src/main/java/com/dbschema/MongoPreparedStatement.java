@@ -21,6 +21,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,8 @@ public class MongoPreparedStatement implements PreparedStatement {
     private boolean isClosed = false;
     private int maxRows = -1;
     private final String query;
+
+    public static final Logger LOGGER = Logger.getLogger( MongoPreparedStatement.class.getName() );
 
     MongoPreparedStatement(final MongoConnection connection) {
         this.connection = connection;
@@ -98,7 +102,7 @@ public class MongoPreparedStatement implements PreparedStatement {
     @Override
     public ResultSet executeQuery(String query) throws SQLException	{
         checkClosed();
-        System.out.println("Execute " + query );
+        LOGGER.log(Level.INFO, "Execute " + query );
         if (lastResultSet != null ) {
             lastResultSet.close();
         }
@@ -180,7 +184,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
             return lastResultSet;
         } catch ( Throwable ex ){
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error executing: " + query, ex );
             throw new SQLException( ex.getMessage(), ex );
         }
     }
