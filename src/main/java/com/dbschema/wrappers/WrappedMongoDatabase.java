@@ -61,8 +61,6 @@ public class WrappedMongoDatabase implements ProxyObject {
 
     public MetaCollection getMetaCollection( String collectionName){
         if ( collectionName == null || collectionName.length() == 0 ) return null;
-        int idx = collectionName.indexOf('.');
-        if ( idx > -1 ) collectionName = collectionName.substring(0, idx );
 
         final MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
         if (metaCollection == null) {

@@ -52,6 +52,13 @@ public class SimpleTest extends AbstractTestCase{
     }
 
     @Test
+    public void testFindRegEx() throws Exception {
+        Statement stmt=con.createStatement();
+        printResultSet( stmt.executeQuery("local.words.find(/^J/)") );
+        stmt.close();
+    }
+
+    @Test
     public void testInsert2() throws Exception {
         Statement stmt=con.createStatement();
         printResultSet( stmt.executeQuery("" +
