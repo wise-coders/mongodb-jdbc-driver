@@ -11,6 +11,7 @@ import com.dbschema.wrappers.WrappedMongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
 import java.io.InputStream;
@@ -74,7 +75,8 @@ public class MongoPreparedStatement implements PreparedStatement {
     private static final Pattern PATTERN_SHOW_PROFILES = Pattern.compile("SHOW\\s+PROFILES\\s*", Pattern.CASE_INSENSITIVE );
 
     private static final String INITIALIZATION_SCRIPT = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-            "" +
+                    //"var DBRef = Java.type('com.dbschema.DBRef'); \n" + // I TRIED THIS BUT DOES NOT WORK
+            "\n" +
             "var ISODate = function( str ) { " +
             "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
             "\n" +

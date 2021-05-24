@@ -1229,13 +1229,12 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getVersionColumns(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public ResultSet getVersionColumns(String catalogName, String schemaName, String table) throws SQLException
-    {
+    public ResultSet getVersionColumns(String catalogName, String schemaName, String table) {
         return EMPTY_RESULT_SET;
     }
 
     @Override
-    public ResultSet getExportedKeys(String catalogName, String schemaName, String tableNamePattern) throws SQLException {
+    public ResultSet getExportedKeys(String catalogName, String schemaName, String tableNamePattern) {
         ArrayResultSet result = new ArrayResultSet();
         result.setColumnNames(new String[]{"PKTABLE_CAT", "PKTABLE_SCHEMA", "PKTABLE_NAME", "PKCOLUMN_NAME", "FKTABLE_CAT", "FKTABLE_SCHEM",
                 "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"});

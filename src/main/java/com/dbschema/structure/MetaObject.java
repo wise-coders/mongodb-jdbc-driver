@@ -2,6 +2,7 @@ package com.dbschema.structure;
 
 import com.dbschema.Util;
 import com.google.gson.GsonBuilder;
+import com.mongodb.DBRef;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -182,6 +183,13 @@ public class MetaObject extends MetaField {
                     if ( keyValue instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
                         field.addObjectId((ObjectId) keyValue);
                     }
+                    if ( keyValue instanceof DBRef ){
+                        DBRef ref = (DBRef)keyValue;
+                        MetaCollection targetCollection = getMetaCollection().metaDatabase.getCollection(ref.getCollectionName());
+                        if ( targetCollection != null ) {
+                            field.createReferenceTo(targetCollection);
+                        }
+                    }
                 }
             }
             for ( MetaField field: fields){
@@ -191,5 +199,16 @@ public class MetaObject extends MetaField {
             }
         }
         isFirstDiscover = false;
+    }
+
+    public MetaCollection getMetaCollection(){
+        MetaObject _obj = this;
+        do {
+            if ( _obj instanceof MetaCollection ){
+                return (MetaCollection) _obj;
+            }
+            _obj = _obj.parentObject;
+        } while ( _obj != null );
+        return null;
     }
 }

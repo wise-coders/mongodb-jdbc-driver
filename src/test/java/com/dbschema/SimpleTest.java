@@ -83,8 +83,15 @@ public class SimpleTest extends AbstractTestCase{
     }
     @Test
     public void testFindAnd() throws Exception {
-        Statement stmt=con.createStatement();
+        Statement stmt = con.createStatement();
         printResultSet( stmt.executeQuery("local.books.find({ $and: [ {'name':'Java'}, {'qty':2} ] } )") );
+        stmt.close();
+    }
+
+    @Test
+    public void testDBRef() throws Exception {
+        Statement stmt = con.createStatement();
+        printResultSet( stmt.executeQuery("local.bicycles.insertOne( { 'name' : 'city bike', 'bike_colour' : DBRef( 'colours', 'Bla') } ); " ) );
         stmt.close();
     }
 
