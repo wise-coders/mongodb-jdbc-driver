@@ -19,7 +19,7 @@ import java.util.logging.Level;
 import static com.dbschema.MongoJdbcDriver.LOGGER;
 
 /**
- * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+ * Copyright Wise Coders GmbH. Free to use. Changes allowed only as push requests into https://bitbucket.org/dbschema/mongodb-jdbc-driver.
  */
 public class WrappedMongoClient {
 

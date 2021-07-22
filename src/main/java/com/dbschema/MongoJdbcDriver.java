@@ -15,7 +15,7 @@ import java.util.logging.*;
  * The URL excepting the jdbc: prefix is passed as it is to the MongoDb native Java driver.
  * Example :
  * jdbc:mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
- * Copyright Wise Coders Gmbh. BSD License-3. Free to use, distribution forbidden. Improvements of the driver accepted only in https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+ * Copyright Wise Coders GmbH. Free to use. Changes allowed only as push requests into https://bitbucket.org/dbschema/mongodb-jdbc-driver.
  */
 public class MongoJdbcDriver implements Driver
 {
