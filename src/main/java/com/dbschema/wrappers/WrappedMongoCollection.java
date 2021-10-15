@@ -111,16 +111,13 @@ public class WrappedMongoCollection<TDocument> {
         return this;
     }
 
-
     public long count() {
         return mongoCollection.countDocuments();
     }
 
-
     public long count(Map filter) {
         return mongoCollection.countDocuments( toBson(filter));
     }
-
 
     public long count(Map filter, CountOptions options) {
         return mongoCollection.countDocuments( toBson( filter), options );

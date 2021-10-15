@@ -40,16 +40,16 @@ public class MetaCollection extends MetaObject {
     public MetaCollection scanDocuments(final WrappedMongoCollection mongoCollection, final ScanStrategy strategy ) {
         switch (strategy) {
             case medium:
-                if (scanFirstDocuments( mongoCollection,300)) {
-                    scanRandomDocuments( mongoCollection,300);
+                if (scanFirstDocuments( mongoCollection,500)) {
+                    scanRandomDocuments( mongoCollection,700);
                 }
                 break;
             case full:
                 scanFirstDocuments( mongoCollection, Integer.MAX_VALUE);
                 break;
             default:
-                if (scanFirstDocuments( mongoCollection,30)) {
-                    scanRandomDocuments( mongoCollection,100);
+                if (scanFirstDocuments( mongoCollection,50)) {
+                    scanRandomDocuments( mongoCollection,150);
                 }
                 break;
         }
