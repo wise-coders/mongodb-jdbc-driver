@@ -886,6 +886,10 @@ public class WrappedMongoCollection<TDocument> {
         mongoCollection.renameCollection( newCollectionNamespace );
     }
 
+    public void renameCollection(String newName) {
+        mongoCollection.renameCollection( new MongoNamespace( getNamespace().getDatabaseName(), newName));
+    }
+
 
     public void renameCollection(MongoNamespace newCollectionNamespace, RenameCollectionOptions renameCollectionOptions) {
 

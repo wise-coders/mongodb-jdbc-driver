@@ -58,7 +58,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String,
      *      java.lang.String[])
      */
-    public ResultSet getTables(String catalogName, String schemaPattern, String tableNamePattern, String[] types) {
+    public ResultSet getTables(String catalogName, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         ArrayResultSet resultSet = new ArrayResultSet();
         resultSet.setColumnNames(new String[]{"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
                 "TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME",
@@ -74,7 +74,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
 
     }
 
-    private void getTablesByCatalogName(String catalogName, ArrayResultSet resultSet) {
+    private void getTablesByCatalogName(String catalogName, ArrayResultSet resultSet) throws SQLException {
         for (String tableName : con.client.getCollectionNames(catalogName)) {
             resultSet.addRow(createTableRow(catalogName, tableName, "TABLE"));
         }

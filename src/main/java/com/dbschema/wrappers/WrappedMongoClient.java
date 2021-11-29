@@ -13,6 +13,7 @@ import com.mongodb.event.ServerHeartbeatSucceededEvent;
 import com.mongodb.event.ServerMonitorListener;
 import org.bson.Document;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -152,7 +153,7 @@ public class WrappedMongoClient {
     }
 
 
-    public List<String> getCollectionNames(String databaseName) {
+    public List<String> getCollectionNames(String databaseName) throws SQLException {
         final List<String> list = new ArrayList<String>();
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
@@ -167,11 +168,12 @@ public class WrappedMongoClient {
             list.remove("system.version");
         } catch ( Throwable ex ){
             LOGGER.log(Level.SEVERE, "Cannot list collection names for " + databaseName + ". ", ex );
+            throw new SQLException( ex );
         }
         return list;
     }
 
-    public List<String> getViewNames(String databaseName) {
+    public List<String> getViewNames(String databaseName) throws SQLException {
         List<String> list = new ArrayList<String>();
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
@@ -184,6 +186,7 @@ public class WrappedMongoClient {
             }
         } catch ( Throwable ex ){
             LOGGER.log(Level.SEVERE, "Cannot list collection names for " + databaseName + ". ", ex );
+            throw new SQLException( ex );
         }
         return list;
     }

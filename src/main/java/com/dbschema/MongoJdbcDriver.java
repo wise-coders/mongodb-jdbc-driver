@@ -49,6 +49,7 @@ public class MongoJdbcDriver implements Driver
      * jdbc:mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
      * The URL excepting the jdbc: prefix is passed as it is to the MongoDb native Java driver.
      */
+    @Override
     public Connection connect(String url, Properties info) throws SQLException {
         if ( url != null && acceptsURL( url )){
             ScanStrategy scan = ScanStrategy.fast;

@@ -159,7 +159,7 @@ public class MetaObject extends MetaField {
                     Map subMap = (Map)keyValue;
                     // "suburbs":[ { name: "Scarsdale" }, { name: "North Hills" } ] WOULD GENERATE SUB-ENTITIES 0,1,2,... FOR EACH LIST ENTRY. SKIP THIS
                     if ( Util.allKeysAreNumbers( subMap )){
-                        final MetaObject childrenMap = createArrayField(key.toString(), "array[integer]", isFirstDiscover );
+                        final MetaObject childrenMap = createArrayField(key.toString(), "array[int]", isFirstDiscover );
                         for ( Object subKey : subMap.keySet() ) {
                             childrenMap.scanDocument(subMap.get( subKey ));
                         }
