@@ -23,6 +23,7 @@ public class MongoConnection implements Connection
 	MongoConnection(WrappedMongoClient client) throws SQLException {
 		this.client = client;
         setCatalog( client.getCurrentDatabaseName() );
+
         switch ( client.pingServer() ){
 			case FAILED : throw new SQLException("Connection to server failed.");
 			case TIMEOUT : throw new SQLException("Timeout connecting the server.");

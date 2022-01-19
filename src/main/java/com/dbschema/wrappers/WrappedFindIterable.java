@@ -1,7 +1,6 @@
 package com.dbschema.wrappers;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.Function;
 import com.mongodb.client.FindIterable;
@@ -13,6 +12,7 @@ import org.bson.conversions.Bson;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static com.dbschema.GraalConvertor.toBson;
 
@@ -147,8 +147,8 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
         return findIterable.into( a );
     }
 
-    public void forEach(Block block) {
-        findIterable.forEach( block );
+    public void forEach(Consumer action) {
+        findIterable.forEach( action );
     }
 
     @Override
@@ -156,7 +156,7 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
         return findIterable.cursor();
     }
 
-    public TResult explain(){
-        return findIterable.modifiers(new Document("$explain", true)).first();
+    public Document explain(){
+        return findIterable.explain();
     }
 }

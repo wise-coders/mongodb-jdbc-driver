@@ -1,6 +1,5 @@
 package com.dbschema.structure;
 
-import com.dbschema.MongoJdbcDriver;
 import com.dbschema.ScanStrategy;
 import com.dbschema.wrappers.WrappedFindIterable;
 import com.dbschema.wrappers.WrappedMongoCollection;

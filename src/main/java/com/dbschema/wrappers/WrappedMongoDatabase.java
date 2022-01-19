@@ -1,7 +1,6 @@
 package com.dbschema.wrappers;
 
 import com.dbschema.GraalConvertor;
-import com.dbschema.MongoJdbcDriver;
 import com.dbschema.ScanStrategy;
 import com.dbschema.Util;
 import com.dbschema.structure.MetaCollection;
@@ -22,8 +21,6 @@ import org.graalvm.polyglot.proxy.ProxyObject;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.dbschema.MongoJdbcDriver.LOGGER;
 
 
 /**

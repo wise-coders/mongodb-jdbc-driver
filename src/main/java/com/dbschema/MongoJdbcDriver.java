@@ -3,8 +3,6 @@ package com.dbschema;
 
 import com.dbschema.wrappers.WrappedMongoClient;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.*;

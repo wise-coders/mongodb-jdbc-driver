@@ -1,17 +1,15 @@
 package com.dbschema.wrappers;
 
 import com.dbschema.ScanStrategy;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
-import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
 import com.mongodb.client.ListDatabasesIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoIterable;
-import com.mongodb.event.ServerHeartbeatFailedEvent;
-import com.mongodb.event.ServerHeartbeatStartedEvent;
-import com.mongodb.event.ServerHeartbeatSucceededEvent;
-import com.mongodb.event.ServerMonitorListener;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -30,29 +28,10 @@ public class WrappedMongoClient {
     private final ScanStrategy scanStrategy;
     public final boolean expandResultSet;
     public enum PingStatus{ INIT, SUCCEED, FAILED, TIMEOUT }
-    private PingStatus pingStatus = PingStatus.INIT;
-
-
-    class LocalServerMonitorListener implements ServerMonitorListener{
-        @Override
-        public void serverHearbeatStarted(ServerHeartbeatStartedEvent serverHeartbeatStartedEvent) {}
-        @Override
-        public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent serverHeartbeatSucceededEvent) {
-            pingStatus = PingStatus.SUCCEED;
-        }
-        @Override
-        public void serverHeartbeatFailed(ServerHeartbeatFailedEvent serverHeartbeatFailedEvent) {
-            pingStatus = PingStatus.FAILED;
-        }
-    }
-
 
     public WrappedMongoClient(String uri, final Properties prop, final ScanStrategy scanStrategy, boolean expandResultSet ){
-        final MongoClientOptions.Builder builder = MongoClientOptions.builder().
-                addServerMonitorListener(new LocalServerMonitorListener());
-        final MongoClientURI clientURI = new MongoClientURI(uri, builder);
-        this.databaseName = clientURI.getDatabase();
-        this.mongoClient = new MongoClient(clientURI );
+        mongoClient = MongoClients.create(uri);
+        this.databaseName = null;
         this.uri = uri;
         this.expandResultSet = expandResultSet;
         this.scanStrategy = scanStrategy;
@@ -60,28 +39,20 @@ public class WrappedMongoClient {
     }
 
     public PingStatus pingServer(){
-        final long start = System.currentTimeMillis();
-        while( pingStatus == PingStatus.INIT ){
-            try { Thread.sleep( 200 ); } catch (InterruptedException ex ){LOGGER.info("Wait for heartbeat message");}
-            if ( System.currentTimeMillis() - start > 8000 ) pingStatus = PingStatus.TIMEOUT;
+        try {
+            mongoClient.listDatabaseNames();
+            Bson command = new BsonDocument("ping", new BsonInt64(1));
+            mongoClient.getDatabase("admin").runCommand(command);
+            LOGGER.info("Connected successfully to server.");
+        } catch (MongoException me) {
+            LOGGER.info("An error occurred while attempting to run a command: " + me);
+            return PingStatus.FAILED;
         }
-        return pingStatus;
+        return PingStatus.SUCCEED;
     }
 
     public void close(){
         mongoClient.close();
-    }
-
-    public MongoClientOptions getMongoClientOptions() {
-        return mongoClient.getMongoClientOptions();
-    }
-
-    public List<MongoCredential> getCredentialsList() {
-        return mongoClient.getCredentialsList();
-    }
-
-    public MongoCredential getCredential() {
-        return mongoClient.getCredential();
     }
 
     public MongoIterable<String> listDatabaseNames() {

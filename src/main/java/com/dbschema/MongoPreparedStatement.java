@@ -11,7 +11,6 @@ import com.dbschema.wrappers.WrappedMongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
 import java.io.InputStream;
