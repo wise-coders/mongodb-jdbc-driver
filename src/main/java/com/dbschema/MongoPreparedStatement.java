@@ -8,6 +8,7 @@ import com.dbschema.resultSet.ResultSetIterator;
 import com.dbschema.wrappers.WrappedMongoClient;
 import com.dbschema.wrappers.WrappedMongoCollection;
 import com.dbschema.wrappers.WrappedMongoDatabase;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.graalvm.polyglot.Context;
