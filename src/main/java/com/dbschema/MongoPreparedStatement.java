@@ -175,7 +175,9 @@ public class MongoPreparedStatement implements PreparedStatement {
             if ( value.isHostObject() ) {
                 obj = value.asHostObject();
             }
-            if (obj instanceof Iterable) {
+            if (obj instanceof AggregateIterable) {
+                lastResultSet = new ResultSetIterator(((AggregateIterable) obj).allowDiskUse(true).iterator(), connection.client.expandResultSet);
+            } else if (obj instanceof Iterable) {
                 lastResultSet = new ResultSetIterator(((Iterable) obj).iterator(), connection.client.expandResultSet);
             } else if (obj instanceof Iterator) {
                 lastResultSet = new ResultSetIterator((Iterator) obj, connection.client.expandResultSet);
