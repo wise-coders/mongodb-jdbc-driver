@@ -30,8 +30,9 @@ public class WrappedMongoClient {
     public enum PingStatus{ INIT, SUCCEED, FAILED, TIMEOUT }
 
     public WrappedMongoClient(String uri, final Properties prop, final ScanStrategy scanStrategy, boolean expandResultSet ){
-        mongoClient = MongoClients.create(uri);
-        this.databaseName = null;
+        int i = uri.lastIndexOf("/")
+        mongoClient = MongoClients.create(uri.substring(0,i));
+        this.databaseName = uri.substring(i+1);
         this.uri = uri;
         this.expandResultSet = expandResultSet;
         this.scanStrategy = scanStrategy;
