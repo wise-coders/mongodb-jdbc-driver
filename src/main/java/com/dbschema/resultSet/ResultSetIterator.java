@@ -14,7 +14,10 @@ import java.util.*;
  * The Iterator can be instantiated with expand=true. In this case we read ahead MAX_READ_AHEAD documents and we fill the metaColumnNames and metaColumnTypes.
  * We need to do this as the result document can be first time for example {firstname='Luise'} and second record {firstname='John',lastname='Carry'}.
  * I mean with this that some keys may miss in some records, so expanding should look ahead for all possible keys.
- * Copyright Wise Coders GmbH. Free to use. Changes allowed only as push requests into https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+ *
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
+ * Free to use by everyone, code modifications allowed only to
+ * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
  */
 public class ResultSetIterator implements ResultSet {
 

@@ -3,7 +3,7 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, without modification, are permitted provided that the following conditions are met:
 
-* No modification on the code are allowed. Changes accepted only into https://bitbucket.org/dbschema/mongodb-jdbc-driver
+* No modification on the code are allowed. Changes accepted only into https://github.com/wise-coders/mongodb-jdbc-driver
 
 * Redistributions of source code must retain the above copyright notice, this
   list of conditions and the following disclaimer.

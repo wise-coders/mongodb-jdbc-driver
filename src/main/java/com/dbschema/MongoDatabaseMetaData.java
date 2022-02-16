@@ -8,7 +8,9 @@ import java.sql.*;
 import java.util.List;
 
 /**
- * Copyright Wise Coders GmbH. Free to use. Changes allowed only as push requests into https://bitbucket.org/dbschema/mongodb-jdbc-driver.
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
+ * Free to use by everyone, code modifications allowed only to
+ * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
  */
 public class MongoDatabaseMetaData implements DatabaseMetaData
 {
@@ -29,8 +31,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getSchemas()
      */
     @Override
-    public ResultSet getSchemas()
-    {
+    public ResultSet getSchemas() {
         ArrayResultSet retVal = new ArrayResultSet();
         retVal.setColumnNames(new String[] { "TABLE_SCHEMA", "TABLE_CATALOG" });
         return retVal;
@@ -40,8 +41,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getCatalogs()
      */
     @Override
-    public ResultSet getCatalogs()
-    {
+    public ResultSet getCatalogs() {
         List<String> mongoDbs = con.client.getDatabaseNames();
         ArrayResultSet retVal = new ArrayResultSet();
         retVal.setColumnNames(new String[] { "TABLE_CAT" });
@@ -49,16 +49,13 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
             retVal.addRow(new String[] { mongoDb });
         }
         return retVal;
-
     }
-
-
 
     /**
      * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String,
      *      java.lang.String[])
      */
-    public ResultSet getTables(String catalogName, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+    public ResultSet getTables( String catalogName, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         ArrayResultSet resultSet = new ArrayResultSet();
         resultSet.setColumnNames(new String[]{"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
                 "TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME",
@@ -98,7 +95,6 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         data[9] = ""; // REF_GENERATION
         return data;
     }
-
 
     /**
      * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String,

@@ -26,8 +26,11 @@ The number of scanned documents can be set in the URL using the parameter scan=<
 
 ## License
 
-[GPL-3 dual license](https://opensource.org/licenses/GPL-3.0).  
-For any improvements please create merge requests to this repository.
+[GPL-3 dual license](https://opensource.org/licenses/GPL-3.0).
+The driver is free to use by everyone. 
+Code modifications allowed only to the current repository as pull requests 
+https://github.com/wise-coders/mongodb-jdbc-driver
+ 
 
 ## Download JDBC Driver Binary Distribution
 
