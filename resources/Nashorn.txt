@@ -82,7 +82,7 @@ In MongoPreparedStatement
 
 package com.dbschema.wrappers;
 
-import com.dbschema.GraalConvertor;
+import GraalConvertor;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
@@ -99,7 +99,7 @@ import org.bson.conversions.Bson;
 import java.util.List;
 import java.util.Map;
 
-import static com.dbschema.GraalConvertor.toBson;
+import static GraalConvertor.toBson;
 
 
 /**

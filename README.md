@@ -56,7 +56,7 @@ import java.sql.PreparedStatement;
 
 ...
 
-Class.forName("com.dbschema.MongoJdbcDriver");
+Class.forName("MongoJdbcDriver");
 Properties properties = new Properties();
 properties.put("user", "someuser");
 properties.put("password", "somepassword" );
