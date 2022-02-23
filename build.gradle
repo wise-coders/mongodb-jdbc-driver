@@ -19,9 +19,9 @@ repositories {
 }
 
 dependencies {
-    compile "org.mongodb:mongodb-driver-sync:4.4.1"
-    compile "org.graalvm.js:js:21.2.0"
-    compile "org.graalvm.js:js-scriptengine:21.2.0"
+    compile "org.mongodb:mongodb-driver-sync:4.5.0"
+    compile "org.graalvm.js:js:22.0.0.2"
+    compile "org.graalvm.js:js-scriptengine:22.0.0.2"
     compile "com.google.code.gson:gson:2.8.9"
     testCompile 'junit:junit:4.12'
 }
@@ -39,7 +39,7 @@ compileJava{
 jar {
     archiveName ="mongojdbc${version}.jar"
     manifest {
-        attributes 'Main-Class': 'com.dbschema.MongoJdbcDriver'
+        attributes 'Main-Class': 'com.wisecoders.dbschema.mongodb.JdbcDriver'
         attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
         attributes 'Specification-Version': "$version"
         attributes 'Specification-Vendor': "Wise Coders"
