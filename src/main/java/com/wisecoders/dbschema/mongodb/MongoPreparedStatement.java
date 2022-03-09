@@ -1,6 +1,9 @@
 
 package com.wisecoders.dbschema.mongodb;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoCollection;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import com.wisecoders.dbschema.mongodb.resultSet.ArrayResultSet;
@@ -11,17 +14,20 @@ import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -76,7 +82,7 @@ public class MongoPreparedStatement implements PreparedStatement {
     private static final Pattern PATTERN_SHOW_PROFILES = Pattern.compile("SHOW\\s+PROFILES\\s*", Pattern.CASE_INSENSITIVE );
 
     private static final String INITIALIZATION_SCRIPT = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-            //"var DBRef = Java.type('com.dbschema.DBRef'); \n" + // I TRIED THIS BUT DOES NOT WORK
+            "var DBRef = function( colName, oid ) { return new com.mongodb.DBRef( colName, oid );} \n" + // I TRIED THIS BUT DOES NOT WORK
             "\n" +
             "var ISODate = function( str ) { " +
             "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
@@ -123,6 +129,8 @@ public class MongoPreparedStatement implements PreparedStatement {
                 db = db.substring( 1, db.length()-1);
             }
             connection.setCatalog( db );
+            connection.getDatabase(db);
+            WrappedMongoClient.createdDatabases.add(db);
             return new OkResultSet();
         }
         Matcher matcherCreateDatabase = PATTERN_CREATE_DATABASE.matcher( plainQuery );
@@ -156,6 +164,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
         }
         try {
+            // //https://github.com/oracle/graaljs/issues/214
             Context context = Context.newBuilder("js").allowAllAccess(true).build();
             boolean dbIsSet = false;
             Value bindings = context.getBindings("js");

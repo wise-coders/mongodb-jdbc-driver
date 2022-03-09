@@ -31,9 +31,9 @@ public class WrappedMongoCollection<TDocument> {
     private final MongoCollection<TDocument> mongoCollection;
 
 
-    WrappedMongoCollection(WrappedMongoDatabase wrappedMongoDatabase, MongoCollection<TDocument> base ){
+    WrappedMongoCollection(WrappedMongoDatabase wrappedMongoDatabase, MongoCollection<TDocument> mongoCollection ){
         this.wrappedMongoDatabase = wrappedMongoDatabase;
-        this.mongoCollection = base;
+        this.mongoCollection = mongoCollection;
     }
 
     private TDocument toDocument( Map map ){
@@ -384,6 +384,10 @@ public class WrappedMongoCollection<TDocument> {
         return mongoCollection.mapReduce( mapFunction, reduceFunction);
     }
 
+    public MapReduceIterable mapReduce(Object mapFunction, Object reduceFunction) {
+        return mongoCollection.mapReduce( String.valueOf(mapFunction), String.valueOf(reduceFunction) );
+    }
+
 
     public MapReduceIterable mapReduce(String mapFunction, String reduceFunction, Class aClass) {
         return mongoCollection.mapReduce( mapFunction, reduceFunction, aClass );
@@ -445,14 +449,20 @@ public class WrappedMongoCollection<TDocument> {
         }
     }
 
+    public void insertMany(List list) {
+        for ( Object obj: list ){
+            insertOne( (Map)obj );
+        }
+    }
 
-    public void insertMany(Object map) {
-        if ( map instanceof List ){
-            for ( Map map1: (List<Map>)map ){
-                insertOne( map1 );
+    public void insertMany(Object obj) {
+        List list = GraalConvertor.toList( obj );
+        if ( list != null ) {
+            for (Map map1 : (List<Map>) list) {
+                insertOne(map1);
             }
-        } else if ( map instanceof Map ){
-            insertOne( (Map)map );
+        } else if (obj instanceof Map) {
+            insertOne((Map) obj);
         }
     }
 

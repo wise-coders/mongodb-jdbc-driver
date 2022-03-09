@@ -164,6 +164,7 @@ public class SimpleTest extends AbstractTestCase{
     @Test
     public void testOID() throws Exception {
         Statement stmt=con.createStatement();
+        stmt.execute("local.testObjectID.drop();");
         printResultSet( stmt.executeQuery("local.testObjectID.insert({'_id':ObjectId('5e95cfecdfa8c111a4b2a53a'), 'name':'Lulu'})"));
         stmt.close();
     }
@@ -209,30 +210,4 @@ public class SimpleTest extends AbstractTestCase{
         st.close();
     }
 
-    @Test
-    public void testCreateCollection() throws Exception {
-        Statement st = con.createStatement();
-        st.execute("local.createCollection( 'accounts',\n" +
-                "   {\n" +
-                "      validator: { $and:\n" +
-                "         [\n" +
-                "            { username: { $type: 'string' } },\n" +
-                "            { email: { $regex: '/@*\\.*$/' } },\n" +
-                "            { password: { $type: 'string' } }\n" +
-                "         ]\n" +
-                "      }\n" +
-                "   }\n" +
-                ")");
-        st.close();
-    }
-
-    @Test
-    public void testRunCommand() throws Exception {
-        Statement st = con.createStatement();
-        st.execute("tournament.runCommand( { 'collMod': 'dragos1', \n" +
-                "                 'validationLevel': 'moderate', \n" +
-                "                 'validationAction': 'warn' \n" +
-                "} )");
-        st.close();
-    }
 }

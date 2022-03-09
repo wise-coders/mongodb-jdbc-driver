@@ -112,18 +112,63 @@ db.stores.find(
    { score: { $meta: "textScore" } }
 ).sort( { score: { $meta: "textScore" } } );
 
-db.articles.drop();
+db.stocks.drop();
 
-db.articles.createIndex( { subject: "text" } );
+db.stocks.createIndex( { name: "text" } );
 
-db.articles.aggregate(
-   [
-     { $match: { $text: { $search: "cake tea" } } },
-     { $sort: { score: { $meta: "textScore" } } },
-     { $project: { title: 1, _id: 0 } }
-   ]
-);
+db.stocks.insertMany([
+   { name: "Infosys", qty: 100, price: 800 },
+   { name: "TCS", qty: 100, price: 2000 },
+   { name: "Wipro", qty: 2500, price: 300 }
+]);
+
+db.stocks.aggregate([
+  { $match: { "price": 2000 } }
+]);
+
+db.stocks.aggregate([ { $match: { "name": "Infosys" } } ]);
+
+db.stocks.aggregate([{$group : {_id : "$qty", same_qty : {$sum : 1}}}]);
+
+db.exp4.drop();
+db.exp4.insert({ "_id" : "3434sfsf", "rate" : 60, "class" : "a" });
+db.exp4.insert({ "_id" : "sdsdsd", "rate" : 60, "class" : "b", "hrs" : 8 });
+
+db.exp4.aggregate([
+     { $match:
+       {$or : [ {"class" : "a"},
+                {$and : [{"class":"b"},{"hrs": {"$exists" : 1}}]}
+              ]
+       }
+     },
+     { $project :
+        { rateMultiply : { $multiply: ["$rate","$hrs",52]},
+         rate:1, class:1, hrs : 1
+        }
+     },
+     { $match :
+       {$or : [
+                { $and : [ {"class" : "a"} ,
+                           {"rate" : {"$gt" : 20000}}
+                         ]
+                } ,
+                { $and : [ {"class" : "b"},
+                           {rateMultiply: {$gt:20000}}
+                         ]
+                 }
+               ]
+       }
+     },
+     { $project: {class : 1 , rate : 1 , hrs : 1 }
+     }
+  ]);
 
 
+db.inv2.insertMany([
+   { "_id" : ObjectId("5ae14d2e124da839884ff939"), "item" : "journal", "qty" : 25, "size" : { "h" : 14, "w" : 21, "uom" : "cm" }, "status" : "A" },
+   { "_id" : ObjectId("5ae14d2e124da839884ff93a"), "item" : "notebook", "qty" : 50, "size" : { "h" : 8.5, "w" : 11, "uom" : "in" }, "status" : "A" },
+   { "_id" : ObjectId("5ae14d2e124da839884ff93b"), "item" : "paper", "qty" : 100, "size" : { "h" : 8.5, "w" : 11, "uom" : "in" }, "status" : "D" },
+   { "_id" : ObjectId("5ae14d2e124da839884ff93d"), "item" : "postcard", "qty" : 45, "size" : { "h" : 10, "w" : 15.25, "uom" : "cm" }, "status" : "A" }
+   ]);
 
-
+ db.inv2.find( { status: "A", qty: { $lt: 30 } } );

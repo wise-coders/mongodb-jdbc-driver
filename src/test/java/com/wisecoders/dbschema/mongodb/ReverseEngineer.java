@@ -26,6 +26,7 @@ public class ReverseEngineer extends AbstractTestCase {
         stmt.execute("local.words.drop();");
         stmt.execute("local.words.insertOne({word: 'sample', qty:2, prop: [{ category:'verb'},{ base:'latin'}]});");
         stmt.execute("local.words.createIndex( { word: 1, 'prop.category':1 }, {name:'sampleIndex'} );");
+        stmt.execute("use tournament;");
         stmt.execute("tournament.students.drop();");
         stmt.execute("tournament.createCollection('students', {\n" +
                 "   validator: {\n" +

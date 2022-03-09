@@ -1,5 +1,7 @@
 package com.wisecoders.dbschema.mongodb.structure;
 
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;

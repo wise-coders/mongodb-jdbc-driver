@@ -1,5 +1,6 @@
 package com.wisecoders.dbschema.mongodb.wrappers;
 
+import com.mongodb.client.MongoCollection;
 import com.wisecoders.dbschema.mongodb.GraalConvertor;
 import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.Util;
