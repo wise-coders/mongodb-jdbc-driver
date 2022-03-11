@@ -85,7 +85,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             "var DBRef = function( colName, oid ) { return new com.mongodb.DBRef( colName, oid );} \n" + // I TRIED THIS BUT DOES NOT WORK
             "\n" +
             "var ISODate = function( str ) { " +
-            "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\"];\n" +
+            "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\", \"yyyy-MM-dd\", ];\n" +
             "\n" +
             "for (i = 0; i < formats.length; i++)  {\n" +
             "    try {\n" +
