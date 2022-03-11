@@ -411,7 +411,7 @@ public class MongoPreparedStatement implements PreparedStatement {
     @Override
     public int getUpdateCount() throws SQLException	{
         checkClosed();
-        return 0;
+        return -1;
     }
 
     @Override
