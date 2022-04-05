@@ -1,18 +1,17 @@
 package com.wisecoders.dbschema.mongodb.wrappers;
 
-import com.mongodb.client.MongoCollection;
-import com.wisecoders.dbschema.mongodb.GraalConvertor;
-import com.wisecoders.dbschema.mongodb.ScanStrategy;
-import com.wisecoders.dbschema.mongodb.Util;
-import com.wisecoders.dbschema.mongodb.structure.MetaCollection;
-import com.wisecoders.dbschema.mongodb.structure.MetaDatabase;
-import com.wisecoders.dbschema.mongodb.structure.MetaField;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.ListCollectionsIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.ValidationOptions;
+import com.wisecoders.dbschema.mongodb.GraalConvertor;
+import com.wisecoders.dbschema.mongodb.ScanStrategy;
+import com.wisecoders.dbschema.mongodb.Util;
+import com.wisecoders.dbschema.mongodb.structure.MetaCollection;
+import com.wisecoders.dbschema.mongodb.structure.MetaDatabase;
+import com.wisecoders.dbschema.mongodb.structure.MetaField;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graalvm.polyglot.Value;

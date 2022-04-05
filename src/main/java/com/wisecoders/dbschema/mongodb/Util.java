@@ -2,6 +2,11 @@ package com.wisecoders.dbschema.mongodb;
 
 import org.bson.Document;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
@@ -93,4 +98,18 @@ public class Util {
         }
     }
 
+    public static String readStringFromInputStream(InputStream is) throws IOException {
+        if ( is == null ){
+            throw new IOException("Got empty Input Stream");
+        }
+        final BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        final StringBuilder sb = new StringBuilder();
+        String str;
+        while (null != ((str = in.readLine()))) {
+            if (sb.length() > 0) sb.append("\n");
+            sb.append(str);
+        }
+        in.close();
+        return sb.toString();
+    }
 }

@@ -165,7 +165,7 @@ public class SimpleTest extends AbstractTestCase{
     public void testOID() throws Exception {
         Statement stmt=con.createStatement();
         stmt.execute("local.testObjectID.drop();");
-        printResultSet( stmt.executeQuery("local.testObjectID.insert({'_id':ObjectId('5e95cfecdfa8c111a4b2a53a'), 'name':'Lulu'})"));
+        printResultSet( stmt.executeQuery("local.testObjectID.insert({'_id':ObjectId('5e95cfecdfa8c111a4b2a53a'), 'name':'Lulu2'})"));
         stmt.close();
     }
 

@@ -1,33 +1,28 @@
 
 package com.wisecoders.dbschema.mongodb;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoCollection;
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
-import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
-import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.model.ReplaceOptions;
 import com.wisecoders.dbschema.mongodb.resultSet.ArrayResultSet;
 import com.wisecoders.dbschema.mongodb.resultSet.ObjectAsResultSet;
 import com.wisecoders.dbschema.mongodb.resultSet.OkResultSet;
 import com.wisecoders.dbschema.mongodb.resultSet.ResultSetIterator;
+import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
+import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -81,32 +76,6 @@ public class MongoPreparedStatement implements PreparedStatement {
     private static final Pattern PATTERN_SHOW_RULES = Pattern.compile("SHOW\\s+RULES\\s*", Pattern.CASE_INSENSITIVE );
     private static final Pattern PATTERN_SHOW_PROFILES = Pattern.compile("SHOW\\s+PROFILES\\s*", Pattern.CASE_INSENSITIVE );
 
-    private static final String INITIALIZATION_SCRIPT = "var ObjectId = function( oid ) { return new org.bson.types.ObjectId( oid );}\n" +
-            "var DBRef = function( colName, oid ) { return new com.mongodb.DBRef( colName, oid );} \n" + // I TRIED THIS BUT DOES NOT WORK
-            "\n" +
-            "var ISODate = function( str ) { " +
-            "var formats = [\"yyyy-MM-dd'T'HH:mm:ss'Z'\", \"yyyy-MM-dd'T'HH:mm.ss'Z'\", \"yyyy-MM-dd'T'HH:mm:ss\", \"yyyy-MM-dd' 'HH:mm:ss\",\"yyyy-MM-dd'T'HH:mm:ssXXX\", \"yyyy-MM-dd\", ];\n" +
-            "\n" +
-            "for (i = 0; i < formats.length; i++)  {\n" +
-            "    try {\n" +
-            "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
-            "    } catch (error) { }\n" +
-            "}\n" +
-            "throw new java.text.ParseException(\"Un-parsable ISO date: \" + str + \" Configured formats: \" + formats, 0);" +
-            "return null;" +
-            "};\n\n" +
-
-            "var Date = function( str ) { " +
-            "var formats = [\"yyyy-MM-dd\", \"dd-MM-yyyy\", \"dd.MM.yyyy\", \"d.MM.yyyy\", \"dd/MM/yyyy\", \"yyyy.MM.dd\", \"M/d/yyyy\" ];\n" +
-            "\n" +
-            "for (i = 0; i < formats.length; i++)  {\n" +
-            "    try {\n" +
-            "        return new java.text.SimpleDateFormat( formats[i] ).parse(str);\n" +
-            "    } catch (error) { }\n" +
-            "}\n" +
-            "throw new java.text.ParseException(\"Un-parsable date: \" + str + \" Configured formats: \" + formats, 0);" +
-            "return null;" +
-            "}";
 
     @Override
     public ResultSet executeQuery(String query) throws SQLException	{
@@ -164,7 +133,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
         }
         try {
-            // //https://github.com/oracle/graaljs/issues/214
+            //https://github.com/oracle/graaljs/issues/214
             Context context = Context.newBuilder("js").allowAllAccess(true).build();
             boolean dbIsSet = false;
             Value bindings = context.getBindings("js");
@@ -179,7 +148,8 @@ public class MongoPreparedStatement implements PreparedStatement {
                 bindings.putMember("db", connection.getDatabase("admin"));
             }
             bindings.putMember("client", connection);
-            context.eval("js", INITIALIZATION_SCRIPT);
+            final String initScript = Util.readStringFromInputStream(MongoPreparedStatement.class.getResourceAsStream("init.js"));
+            context.eval("js", initScript);
 
             Value value = context.eval( "js", query );
             Object obj = value;

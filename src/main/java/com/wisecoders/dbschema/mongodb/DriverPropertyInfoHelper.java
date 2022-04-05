@@ -43,7 +43,7 @@ class DriverPropertyInfoHelper {
                 + "I/O socket read and write operations "
                 + "Socket.setSoTimeout(int) Default is 0 and means no timeout.", null);
 
-        return propInfos.toArray(new DriverPropertyInfo[propInfos.size()]);
+        return propInfos.toArray(new DriverPropertyInfo[0]);
     }
 
     private void addPropInfo(final ArrayList<DriverPropertyInfo> propInfos, final String propName,
