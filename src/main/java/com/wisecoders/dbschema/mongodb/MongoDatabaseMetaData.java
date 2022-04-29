@@ -1264,7 +1264,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                         "1",//KEY_SEQ 1,2
                         ""+ DatabaseMetaData.importedKeyNoAction, //UPDATE_RULE
                         ""+DatabaseMetaData.importedKeyNoAction, //DELETE_RULE
-                        "Virtual Relation", //FK_NAME
+                        "Relationship", //FK_NAME
                         null, //PK_NAME
                         ""+DatabaseMetaData.importedKeyInitiallyImmediate //DEFERRABILITY
                 });
@@ -1314,7 +1314,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                     "1",//KEY_SEQ 1,2
                     ""+ DatabaseMetaData.importedKeyNoAction, //UPDATE_RULE
                     ""+DatabaseMetaData.importedKeyNoAction, //DELETE_RULE
-                    "Virtual Relation", //FK_NAME
+                    "Relationship", //FK_NAME
                     null, //PK_NAME
                     ""+DatabaseMetaData.importedKeyInitiallyImmediate //DEFERRABILITY
             });

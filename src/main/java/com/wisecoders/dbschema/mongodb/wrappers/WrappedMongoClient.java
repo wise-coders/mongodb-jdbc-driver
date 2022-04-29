@@ -33,13 +33,18 @@ public class WrappedMongoClient {
     public enum PingStatus{ INIT, SUCCEED, FAILED, TIMEOUT }
 
     public WrappedMongoClient(String uri, final Properties prop, final ScanStrategy scanStrategy, boolean expandResultSet ){
+        final ConnectionString connectionString = new ConnectionString(uri){
+            @Override
+            public Integer getMaxConnectionIdleTime() {
+                return Integer.MAX_VALUE;
+            }
+        };
+        this.mongoClient = MongoClients.create(connectionString);
         int i = uri.lastIndexOf("/" );
         // THE SLASH IS USED TWO TIMES IN THE URL: mongdb://.... /dbname
         if ( i < uri.indexOf( "://") + "://".length() + 1 ){
             i = -1;
         }
-        final ConnectionString connectionString = new ConnectionString(uri);
-        this.mongoClient = MongoClients.create(connectionString);
         this.databaseName = i > -1 ? uri.substring(i + 1) : null;
         this.uri = uri;
         this.expandResultSet = expandResultSet;

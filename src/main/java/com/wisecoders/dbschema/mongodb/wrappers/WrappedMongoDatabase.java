@@ -47,11 +47,10 @@ public class WrappedMongoDatabase implements ProxyObject {
             if ( definition != null ){
                 final String name = info.getString("name");
                 final MetaCollection metaCollection = metaDatabase.createCollection( name );
-                LOGGER.log(Level.INFO, "--- Collection " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n"); ;
                 try {
                     metaCollection.visitValidatorNode(null, true, definition);
                 } catch ( Throwable ex ){
-                    LOGGER.log(Level.SEVERE, "Error parsing validation rule.", ex );
+                    LOGGER.log(Level.SEVERE, "Error parsing validation rule for " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n", ex );
                     metaDatabase.dropCollection( name );
                 }
             }
@@ -282,7 +281,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                                     if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
                                         solvedFields.add( metaField );
                                         metaField.createReferenceTo(_metaCollection);
-                                        LOGGER.log(Level.INFO, "Found virtual relation  " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
+                                        LOGGER.log(Level.INFO, "Found relationship  " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
                                     }
                                 }
                             }
@@ -290,7 +289,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                     }
                 }
             } catch ( Throwable ex ){
-                LOGGER.log( Level.SEVERE, "Error in discover foreign keys", ex );
+                LOGGER.log( Level.SEVERE, "Error discovering relationships.", ex );
             }
         }
     }
