@@ -1,11 +1,12 @@
 package com.wisecoders.dbschema.mongodb.wrappers;
 
-import com.wisecoders.dbschema.mongodb.ScanStrategy;
+import com.mongodb.ConnectionString;
 import com.mongodb.MongoException;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoIterable;
+import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.Document;
@@ -37,7 +38,8 @@ public class WrappedMongoClient {
         if ( i < uri.indexOf( "://") + "://".length() + 1 ){
             i = -1;
         }
-        this.mongoClient = MongoClients.create( i > -1 ? uri.substring(0, i) : uri);
+        final ConnectionString connectionString = new ConnectionString(uri);
+        this.mongoClient = MongoClients.create(connectionString);
         this.databaseName = i > -1 ? uri.substring(i + 1) : null;
         this.uri = uri;
         this.expandResultSet = expandResultSet;

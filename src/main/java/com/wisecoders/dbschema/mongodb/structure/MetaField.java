@@ -28,8 +28,6 @@ public class MetaField {
         this.name = name;
         this.typeName = typeName;
         this.type = type;
-        if ( "bike_colour".equals(name))
-            System.out.println("Here");
     }
 
     void addObjectId(ObjectId objectId){
