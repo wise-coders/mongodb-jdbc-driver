@@ -1,8 +1,8 @@
 package com.wisecoders.dbschema.mongodb.structure;
 
-import com.wisecoders.dbschema.mongodb.Util;
 import com.google.gson.GsonBuilder;
 import com.mongodb.DBRef;
+import com.wisecoders.dbschema.mongodb.Util;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -21,7 +21,7 @@ public class MetaObject extends MetaField {
     static final int TYPE_OBJECT = 4999544;
     static final int TYPE_ARRAY = 4999545;
 
-    public final List<MetaField> fields = new ArrayList<MetaField>();
+    public final List<MetaField> fields = new ArrayList<>();
 
     MetaObject(MetaObject parentObject, String name, String typeName, int type ){
         super( parentObject, name, typeName, type );
@@ -212,5 +212,13 @@ public class MetaObject extends MetaField {
             _obj = _obj.parentObject;
         } while ( _obj != null );
         return null;
+    }
+
+    public int getFieldCount(){
+        int count = 0;
+        for ( MetaField field : fields ){
+            count += field.getFieldCount();
+        }
+        return count;
     }
 }

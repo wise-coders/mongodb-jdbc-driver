@@ -1,12 +1,9 @@
 package com.wisecoders.dbschema.mongodb.structure;
 
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
+import com.mongodb.client.ListIndexesIterable;
 import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
-import com.mongodb.client.ListIndexesIterable;
-import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -40,49 +37,36 @@ public class MetaCollection extends MetaObject {
         return index;
     }
 
-    public MetaCollection scanDocuments(final WrappedMongoCollection mongoCollection, final ScanStrategy strategy ) {
-        switch (strategy) {
-            case medium:
-                if (scanFirstDocuments( mongoCollection,500)) {
-                    scanRandomDocuments( mongoCollection,700);
-                }
-                break;
-            case full:
-                scanFirstDocuments( mongoCollection, Integer.MAX_VALUE);
-                break;
-            default:
-                if (scanFirstDocuments( mongoCollection,50)) {
-                    scanRandomDocuments( mongoCollection,150);
-                }
-                break;
-        }
+    public MetaCollection scanDocumentsAndIndexes(final WrappedMongoCollection mongoCollection, final ScanStrategy strategy ) {
+        scanDocuments( mongoCollection, strategy );
         scanIndexes( mongoCollection );
         return this;
     }
 
-
-
-    private boolean scanFirstDocuments(final WrappedMongoCollection mongoCollection, int iterations ) {
-        MongoCursor cursor = mongoCollection.find().iterator();
-        int iteration = 0;
-        while( cursor.hasNext() && ++iteration <= iterations ){
-            scanDocument( cursor.next());
+    private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy) {
+        long scanStartTime = System.currentTimeMillis();
+        long skipTime = 0;
+        long documentCount = mongoCollection.count();
+        int skipCount = 1;
+        if ( documentCount > 2 * strategy.SCAN_FIRST_LAST ) {
+            skipCount =  (int)Math.max( 1, ( documentCount - (2 * strategy.SCAN_FIRST_LAST) ) / strategy.SCAN_BETWEEN );
         }
-        cursor.close();
-        return iteration >= iterations;
-    }
-
-    private void scanRandomDocuments(final WrappedMongoCollection mongoCollection, int iterations ) {
-        int skip = 10, i = 0;
-        final WrappedFindIterable jFindIterable = mongoCollection.find(); // .limit(-1)
-        while ( i++ < iterations ){
-            final MongoCursor crs = jFindIterable.iterator();
-            while( i++ < iterations && crs.hasNext() ){
-                scanDocument( crs.next());
+        long i = 0;
+        final WrappedFindIterable jFindIterable = mongoCollection.find();
+        for (Object o : jFindIterable) {
+            scanDocument(o);
+            if (skipCount > 1 && i + skipCount < documentCount && i > strategy.SCAN_FIRST_LAST && i < documentCount - strategy.SCAN_FIRST_LAST) {
+                skipTime -= System.currentTimeMillis();
+                jFindIterable.skip(skipCount);
+                skipTime += System.currentTimeMillis();
             }
-            jFindIterable.skip( skip );
-            skip = skip * 2;
+            i++;
+            // DON'T SCAN IF THE FIELD COUNT IS ALREADY TOO HIGH
+            if ( getFieldCount() > 400 || System.currentTimeMillis() - scanStartTime > 4000 ){
+                break;
+            }
         }
+        LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " with " + documentCount + " documents, " + i + " scanned, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms, skipTime=" + skipTime );
     }
 
     private static final String KEY_NAME = "name";

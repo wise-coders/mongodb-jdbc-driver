@@ -18,14 +18,14 @@ public class SimpleTest extends AbstractTestCase{
 
     private Connection con;
 
-    private static final String urlWithAuth = "jdbc:mongodb://admin:mypassword@localhost:27017/local?authSource=local&connectTimeoutMS=1000";
+    private static final String urlWithAuth = "jdbc:mongodb://admin:mypassword@localhost:27017/local?scan=fast&authSource=local&connectTimeoutMS=1000";
     private static final String urlWithoutAuth = "jdbc:mongodb://localhost";
 
 
     @Before
     public void setUp() throws ClassNotFoundException, SQLException {
         Class.forName("com.wisecoders.dbschema.mongodb.JdbcDriver");
-        con = DriverManager.getConnection( urlWithoutAuth, null, null);
+        con = DriverManager.getConnection( urlWithAuth, null, null);
         Statement stmt=con.createStatement();
         stmt.execute("local.books.drop();");
         stmt.execute("local.booksView.drop();");

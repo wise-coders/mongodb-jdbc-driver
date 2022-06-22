@@ -64,7 +64,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         final MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
         if (metaCollection == null) {
             try {
-                return metaDatabase.createCollection( collectionName ).scanDocuments( getCollection(collectionName), scanStrategy );
+                return metaDatabase.createCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy );
             } catch ( Throwable ex ){
                 LOGGER.log(Level.SEVERE, "Error discovering collection " + mongoDatabase.getName() + "." + collectionName + ". ", ex );
             }

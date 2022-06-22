@@ -30,9 +30,9 @@ public class WrappedMongoClient {
     private final String uri;
     private final ScanStrategy scanStrategy;
     public final boolean expandResultSet;
-    public enum PingStatus{ INIT, SUCCEED, FAILED, TIMEOUT }
+    public enum PingStatus{ SUCCEED, FAILED, TIMEOUT }
 
-    public WrappedMongoClient(String uri, final Properties prop, final ScanStrategy scanStrategy, boolean expandResultSet ){
+    public WrappedMongoClient(String uri, final Properties prop, final String databaseName, final ScanStrategy scanStrategy, boolean expandResultSet ){
         final ConnectionString connectionString = new ConnectionString(uri){
             @Override
             public Integer getMaxConnectionIdleTime() {
@@ -40,12 +40,7 @@ public class WrappedMongoClient {
             }
         };
         this.mongoClient = MongoClients.create(connectionString);
-        int i = uri.lastIndexOf("/" );
-        // THE SLASH IS USED TWO TIMES IN THE URL: mongdb://.... /dbname
-        if ( i < uri.indexOf( "://") + "://".length() + 1 ){
-            i = -1;
-        }
-        this.databaseName = i > -1 ? uri.substring(i + 1) : null;
+        this.databaseName = databaseName;
         this.uri = uri;
         this.expandResultSet = expandResultSet;
         this.scanStrategy = scanStrategy;
@@ -56,7 +51,7 @@ public class WrappedMongoClient {
         try {
             mongoClient.listDatabaseNames();
             Bson command = new BsonDocument("ping", new BsonInt64(1));
-            mongoClient.getDatabase("admin").runCommand(command);
+            mongoClient.getDatabase( databaseName ).runCommand(command);
             LOGGER.info("Connected successfully to server.");
         } catch (MongoException me) {
             LOGGER.info("An error occurred while attempting to run a command: " + me);
@@ -139,7 +134,7 @@ public class WrappedMongoClient {
 
 
     public List<String> getCollectionNames(String databaseName) throws SQLException {
-        final List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<>();
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
             if ( db != null ){

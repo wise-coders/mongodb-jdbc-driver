@@ -1,6 +1,7 @@
 
 package com.wisecoders.dbschema.mongodb;
 
+import com.sun.tools.jdeprscan.scan.Scan;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 
 import java.sql.*;
@@ -53,22 +54,39 @@ public class JdbcDriver implements Driver
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
         if ( url != null && acceptsURL( url )){
-            ScanStrategy scan = ScanStrategy.fast;
-            boolean expand = false;
-            for (ScanStrategy s : ScanStrategy.values() ){
-                if ( url.contains( "?scan=" + s ) || url.contains( "&scan=" + s )){
-                    scan = s;
-                    url = url.replaceFirst("\\?scan=" + s, "" ).replaceFirst("&scan=" + s, "");
-                }
-            }
-            if ( url.contains( "?expand=true" ) || url.contains( "&expand=true" )){
-                expand = true;
-                url = url.replaceFirst("\\?expand=true", "" ).replaceFirst("&expand=true", "");
-            }
             if ( url.startsWith("jdbc:")) {
                 url = url.substring("jdbc:".length());
             }
-            final WrappedMongoClient client = new WrappedMongoClient(url, info, scan, expand );
+            LOGGER.info("Connect URL: " + url );
+            int idx;
+            ScanStrategy scan = ScanStrategy.fast;
+            boolean expand = false;
+            String newUrl = url, urlWithoutParams = url;
+            if ( ( idx = url.indexOf("?")) > 0 ){
+                String paramsURL = url.substring( idx+1);
+                urlWithoutParams = url.substring( 0, idx );
+                StringBuilder sbParams = new StringBuilder();
+                for ( String pair: paramsURL.split("&")){
+                    String[] pairArr = pair.split("=");
+                    String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
+                    switch( key ){
+                        case "scan": try { scan = ScanStrategy.valueOf( pairArr[1]);} catch ( IllegalArgumentException ex ){} break;
+                        case "expand": expand = Boolean.parseBoolean( pairArr[1]); break;
+                        default:
+                            if ( sbParams.length() > 0 ) sbParams.append("&");
+                            sbParams.append( pair );
+                            break;
+                    }
+                }
+                newUrl = url.substring(0, idx) + "?" + sbParams;
+            }
+            String databaseName = "admin";
+            if ( ( idx = urlWithoutParams.lastIndexOf("/")) > 1 && urlWithoutParams.charAt( idx -1) != '/' ){
+                databaseName = urlWithoutParams.substring( idx + 1 );
+            }
+
+            LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
+            final WrappedMongoClient client = new WrappedMongoClient(url, info, databaseName, scan, expand );
             return new MongoConnection(client);
         }
         return null;

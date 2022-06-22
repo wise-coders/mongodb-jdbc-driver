@@ -12,7 +12,6 @@ import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 import org.bson.Document;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
 import java.io.InputStream;

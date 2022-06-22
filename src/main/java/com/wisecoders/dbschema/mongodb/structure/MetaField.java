@@ -15,9 +15,9 @@ public class MetaField {
 
     public final MetaObject parentObject;
     public final String name, typeName;
-    public final List<ObjectId> objectIds = new ArrayList<ObjectId>();
+    public final List<ObjectId> objectIds = new ArrayList<>();
     public final int type;
-    public final List<MetaReference> references = new ArrayList<MetaReference>();
+    public final List<MetaReference> references = new ArrayList<>();
     private boolean mandatory = true;
     public String options;
     private String description;
@@ -99,5 +99,9 @@ public class MetaField {
 
     public String getDescription(){
         return description;
+    }
+
+    public int getFieldCount(){
+        return 1;
     }
 }

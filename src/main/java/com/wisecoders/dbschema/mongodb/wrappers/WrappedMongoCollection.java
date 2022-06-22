@@ -1,6 +1,5 @@
 package com.wisecoders.dbschema.mongodb.wrappers;
 
-import com.wisecoders.dbschema.mongodb.GraalConvertor;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -10,6 +9,7 @@ import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import com.wisecoders.dbschema.mongodb.GraalConvertor;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -35,6 +35,11 @@ public class WrappedMongoCollection<TDocument> {
         this.wrappedMongoDatabase = wrappedMongoDatabase;
         this.mongoCollection = mongoCollection;
     }
+
+    private static final long SCAN_FIRST_LAST = 100;
+
+
+
 
     private TDocument toDocument( Map map ){
         return (TDocument)( new Document( GraalConvertor.convertMap(map) ));

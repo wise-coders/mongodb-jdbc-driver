@@ -1,7 +1,7 @@
 package com.wisecoders.dbschema.mongodb;
 
-import com.wisecoders.dbschema.mongodb.structure.*;
 import com.wisecoders.dbschema.mongodb.resultSet.ArrayResultSet;
+import com.wisecoders.dbschema.mongodb.structure.*;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 
 import java.sql.*;
