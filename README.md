@@ -34,7 +34,7 @@ https://github.com/wise-coders/mongodb-jdbc-driver
 
 ## Download JDBC Driver Binary Distribution
 
-[Available here](http://www.dbschema.com/jdbc-drivers/MongoDbJdbcDriver.zip). Unpack and include all jars in your classpath. The driver is compatible with Java 8.
+Download the driver from the [DbSchema website](http://www.dbschema.com/jdbc-drivers/MongoDbJdbcDriver.zip). Unpack and include all jars in your classpath. The driver is compatible with Java 8.
 
 ## Driver URL
 
