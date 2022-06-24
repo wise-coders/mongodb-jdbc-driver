@@ -1,13 +1,13 @@
 # MongoDb JDBC Driver | DbSchema MongoDB Designer
 
-The driver is written by [DbSchema - MongoDb Diagram Designer](https://dbschema.com/mongodb-tool.html) for everybody how needs an MongoDb JDBC driver. 
+The driver is provided by [DbSchema - MongoDb Diagram Designer](https://dbschema.com/mongodb-tool.html) for everybody how needs an MongoDb JDBC driver. 
 
 ## Driver Features
 
 * JDBC driver capable to execute native MongoDb queries, similar with Mongo Shell. 
 
 * The driver is using the native [MongoDb Java driver](https://mongodb.github.io/mongo-java-driver/) to connect and execute queries. 
-Therefore the JDBC URL is the same as [MongoDb URL](https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/connect-to-mongodb/).
+Therefore, the JDBC URL is the same as [MongoDb URL](https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/connect-to-mongodb/).
 
 * The driver returns by default a ResultSet with a single Object. Use `resultSet.getObject(1)` to get this object.
 Adding the parameter `expand=true` in the URL will create a column in the result set for each key in the result document.
