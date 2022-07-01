@@ -19,11 +19,11 @@ repositories {
 }
 
 dependencies {
-    compile "org.mongodb:mongodb-driver-sync:4.5.1"
-    compile "org.graalvm.js:js:22.0.0.2"
-    compile "org.graalvm.js:js-scriptengine:22.0.0.2"
-    compile "com.google.code.gson:gson:2.8.9"
-    testCompile 'junit:junit:4.12'
+    implementation "org.mongodb:mongodb-driver-sync:4.5.1"
+    implementation "org.graalvm.js:js:22.0.0.2"
+    implementation "org.graalvm.js:js-scriptengine:22.0.0.2"
+    implementation "com.google.code.gson:gson:2.8.9"
+    testImplementation 'junit:junit:4.12'
 }
 
 compileJava{
@@ -58,8 +58,8 @@ task zip(type: Zip, dependsOn:['clean','jar']) {
 
 task tar(type: Tar, dependsOn:['clean','jar']) {
     archiveName 'MongoDbJdbcDriver.tar'
-    from configurations.runtime.allArtifacts.files
-    from configurations.runtime
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
 }
 
 /*
@@ -70,8 +70,8 @@ task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
 }*/
 
 task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
-    from configurations.runtime.allArtifacts.files
-    from configurations.runtime
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
     into "${System.getProperty('user.home')}/.DbSchema/drivers/MongoDb/"
 }
 
@@ -83,7 +83,7 @@ remotes {
         password = websitePassword
     }
 }
-
+/*
 task uploadWeb {
     doLast {
         ssh.settings {
@@ -100,7 +100,7 @@ task uploadWeb {
         }
     }
 }
-
+*/
 /* EXTRACT COMPLETION KEYWORDS. THIS SHOULD PRINT ON SCREEN SOME TEXT
 def listMethodNames = { clz ->
                 def result = []
