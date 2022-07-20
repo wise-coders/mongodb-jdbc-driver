@@ -42,18 +42,25 @@ public class WrappedMongoDatabase implements ProxyObject {
         this.mongoDatabase = mongoDatabase;
         this.scanStrategy = scanStrategy;
         this.metaDatabase = new MetaDatabase(mongoDatabase.getName());
-        for ( Document info : mongoDatabase.listCollections()){
-            Document definition = (Document) Util.getByPath(info, "options.validator.$jsonSchema");
-            if ( definition != null ){
-                final String name = info.getString("name");
-                final MetaCollection metaCollection = metaDatabase.createCollection( name );
-                try {
-                    metaCollection.visitValidatorNode(null, true, definition);
-                } catch ( Throwable ex ){
-                    LOGGER.log(Level.SEVERE, "Error parsing validation rule for " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n", ex );
-                    metaDatabase.dropCollection( name );
+        try {
+            if ( !"config".equals(mongoDatabase.getName()) && !"admin".equals(mongoDatabase.getName()) && !"local".equals(mongoDatabase.getName())) {
+                for (Document info : mongoDatabase.listCollections()) {
+                    Document definition = (Document) Util.getByPath(info, "options.validator.$jsonSchema");
+                    if (definition != null) {
+                        final String name = info.getString("name");
+                        final MetaCollection metaCollection = metaDatabase.createCollection(name);
+                        try {
+                            metaCollection.visitValidatorNode(null, true, definition);
+                        } catch (Throwable ex) {
+                            LOGGER.log(Level.SEVERE, "Error parsing validation rule for " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n", ex);
+                            metaDatabase.dropCollection(name);
+                        }
+                        metaCollection.scanIndexes(getCollection(name));
+                    }
                 }
             }
+        } catch ( Throwable ex ){
+            LOGGER.log(Level.SEVERE, "Error listing database '" + mongoDatabase.getName() + "' collections\n\n", ex);
         }
     }
 

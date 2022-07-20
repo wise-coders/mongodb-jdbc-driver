@@ -1,7 +1,6 @@
 package com.wisecoders.dbschema.mongodb.wrappers;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoException;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -47,17 +46,12 @@ public class WrappedMongoClient {
         getDatabaseNames();
     }
 
-    public PingStatus pingServer(){
-        try {
+    public boolean pingServer(){
             mongoClient.listDatabaseNames();
             Bson command = new BsonDocument("ping", new BsonInt64(1));
-            mongoClient.getDatabase( databaseName ).runCommand(command);
+            mongoClient.getDatabase( databaseName != null && databaseName.length() > 0 ? databaseName : "admin" ).runCommand(command);
             LOGGER.info("Connected successfully to server.");
-        } catch (MongoException me) {
-            LOGGER.info("An error occurred while attempting to run a command: " + me);
-            return PingStatus.FAILED;
-        }
-        return PingStatus.SUCCEED;
+            return true;
     }
 
     public void close(){

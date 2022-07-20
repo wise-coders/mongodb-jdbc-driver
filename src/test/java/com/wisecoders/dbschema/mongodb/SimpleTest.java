@@ -18,7 +18,7 @@ public class SimpleTest extends AbstractTestCase{
 
     private Connection con;
 
-    private static final String urlWithAuth = "jdbc:mongodb://admin:mypassword@localhost:27017/local?scan=fast&authSource=local&connectTimeoutMS=1000";
+    private static final String urlWithAuth = "jdbc:mongodb://localhost:27017/local?scan=fast&authSource=local&connectTimeoutMS=1000";
     private static final String urlWithoutAuth = "jdbc:mongodb://localhost";
 
 

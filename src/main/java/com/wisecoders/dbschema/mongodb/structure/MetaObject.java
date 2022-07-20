@@ -18,8 +18,8 @@ import java.util.Map;
  */
 public class MetaObject extends MetaField {
 
-    static final int TYPE_OBJECT = 4999544;
-    static final int TYPE_ARRAY = 4999545;
+    public static final int TYPE_OBJECT = 4999544;
+    public static final int TYPE_ARRAY = 4999545;
 
     public final List<MetaField> fields = new ArrayList<>();
 

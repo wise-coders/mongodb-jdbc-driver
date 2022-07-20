@@ -1,6 +1,7 @@
 package com.wisecoders.dbschema.mongodb;
 
 import com.google.gson.Gson;
+import com.wisecoders.dbschema.mongodb.structure.MetaObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,13 +16,20 @@ class AbstractTestCase {
 
     void printResultSet(ResultSet rs ) throws SQLException  {
         while ( rs != null && rs.next()){
-            Object obj = rs.getObject(1 );
-            if ( obj != null ){
-                try {
-                    System.out.println(new Gson().toJson(obj));
-                } catch ( Throwable ex ){
-                    System.out.println(obj);
+            if ( rs.getMetaData().getColumnCount() == 1 && ( rs.getMetaData().getColumnType(1) == MetaObject.TYPE_ARRAY || rs.getMetaData().getColumnType(1) == MetaObject.TYPE_OBJECT ) ) {
+                Object obj = rs.getObject(1);
+                if (obj != null) {
+                    try {
+                        System.out.println(new Gson().toJson(obj));
+                    } catch (Throwable ex) {
+                        System.out.println(obj);
+                    }
                 }
+            } else {
+                for ( int c = 1; c <= rs.getMetaData().getColumnCount(); c++ ) {
+                    System.out.print( rs.getMetaData().getColumnName(c) + " = "  + rs.getObject(c) + " ");
+                }
+                System.out.println("");
             }
         }
     }

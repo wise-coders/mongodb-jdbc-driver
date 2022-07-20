@@ -86,12 +86,15 @@ public class ReverseEngineer extends AbstractTestCase {
 
     @Test
     public void testIndex() throws SQLException {
-        ResultSet rs = con.getMetaData().getTables("local", "local", null, null );
+        ResultSet rs = con.getMetaData().getTables("coulam_sandbox", "coulam_sandbox", null, null );
         while ( rs.next() ){
             String colName = rs.getString(3);
-            printResultSet( con.getMetaData().getColumns("local", "local", colName, null));
+            /*printResultSet( con.getMetaData().getColumns("local", "local", colName, null));
             printResultSet( con.getMetaData().getColumns("tournament", "local", colName, null));
             printResultSet( con.getMetaData().getIndexInfo("local", "local", colName, false, false ));
+             */
+            printResultSet( con.getMetaData().getColumns("coulam_sandbox", "coulam_sandbox", colName, null));
+            printResultSet( con.getMetaData().getIndexInfo("coulam_sandbox", "coulam_sandbox", colName, false, false ));
         }
     }
 }

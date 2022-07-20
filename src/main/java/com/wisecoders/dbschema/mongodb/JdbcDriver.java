@@ -1,7 +1,6 @@
 
 package com.wisecoders.dbschema.mongodb;
 
-import com.sun.tools.jdeprscan.scan.Scan;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 
 import java.sql.*;

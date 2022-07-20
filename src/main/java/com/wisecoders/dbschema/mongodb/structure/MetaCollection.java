@@ -73,7 +73,7 @@ public class MetaCollection extends MetaObject {
     private static final String KEY_UNIQUE = "unique";
     private static final String KEY_KEY = "key";
 
-    private void scanIndexes(final WrappedMongoCollection mongoCollection ){
+    public void scanIndexes(final WrappedMongoCollection mongoCollection ){
         try {
             ListIndexesIterable<Document> iterable = mongoCollection.listIndexes();
             for ( Object indexObject : iterable ){

@@ -51,15 +51,17 @@ jar {
 
 
 task zip(type: Zip, dependsOn:['clean','jar']) {
-    archiveName 'MongoDbJdbcDriver.zip'
-    from configurations.runtime.allArtifacts.files
-    from configurations.runtime
+    archiveFileName.set 'MongoDbJdbcDriver.zip'
+    from configurations.runtimeClasspath.allArtifacts.files
+    from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
 }
 
 task tar(type: Tar, dependsOn:['clean','jar']) {
-    archiveName 'MongoDbJdbcDriver.tar'
+    archiveFileName.set 'MongoDbJdbcDriver.tar'
     from configurations.runtimeClasspath.allArtifacts.files
     from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
 }
 
 /*
@@ -72,6 +74,7 @@ task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
 task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtimeClasspath.allArtifacts.files
     from configurations.runtimeClasspath
+    from "build/libs" include "*.jar"
     into "${System.getProperty('user.home')}/.DbSchema/drivers/MongoDb/"
 }
 
