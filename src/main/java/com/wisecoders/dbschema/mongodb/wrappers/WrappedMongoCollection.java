@@ -769,10 +769,10 @@ public class WrappedMongoCollection<TDocument> {
 
     public String createIndex(Map keys, Map options ) {
         IndexOptions indexOptions = new IndexOptions();
-        if ( options.containsKey( NAME_KEY)) indexOptions.name( options.get(NAME_KEY).toString() );
+        if ( options.containsKey(NAME_KEY)) indexOptions.name( options.get(NAME_KEY).toString() );
         if ( options.containsKey(PARTIAL_FILTER_EXPRESSION_KEY) ) indexOptions.partialFilterExpression( GraalConvertor.toBson(options.get( "partialFilterExpression")));
         if ( options.containsKey(SPARSE_KEY) && options.get( SPARSE_KEY) instanceof Boolean ) indexOptions.sparse( (Boolean) options.get(SPARSE_KEY));
-        if ( options.containsKey(UNIQUE_KEY) && options.get( UNIQUE_KEY) instanceof Boolean ) indexOptions.sparse( (Boolean) options.get(UNIQUE_KEY));
+        if ( options.containsKey(UNIQUE_KEY) && options.get( UNIQUE_KEY) instanceof Boolean ) indexOptions.unique( (Boolean) options.get(UNIQUE_KEY));
         if ( options.containsKey(EXPIRE_AFTER_SECONDS_KEY) && options.get( EXPIRE_AFTER_SECONDS_KEY) instanceof Number ) indexOptions.expireAfter( ((Number) options.get(EXPIRE_AFTER_SECONDS_KEY)).longValue(), TimeUnit.SECONDS );
         return mongoCollection.createIndex( GraalConvertor.toBson( keys ), indexOptions );
     }

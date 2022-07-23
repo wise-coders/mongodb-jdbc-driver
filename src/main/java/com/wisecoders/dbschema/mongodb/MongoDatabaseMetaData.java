@@ -256,7 +256,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                         result.addRow(new String[] { collection.name, // "TABLE_CAT",
                                 null, // "TABLE_SCHEMA",
                                 collection.name, // "TABLE_NAME", (i.e. MongoDB Collection Name)
-                                "YES", // "NON-UNIQUE",
+                                index.unique ? "false" : "true", // "NON-UNIQUE",
                                 collection.name, // "INDEX QUALIFIER",
                                 index.name, // "INDEX_NAME",
                                 "0", // "TYPE",

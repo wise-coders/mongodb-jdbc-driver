@@ -25,6 +25,11 @@ public class MetaObject extends MetaField {
 
     MetaObject(MetaObject parentObject, String name, String typeName, int type ){
         super( parentObject, name, typeName, type );
+        if ( parentObject == null ) {
+            final MetaField field = new MetaField(this, "_id", "ObjectID", Types.ROWID);
+            field.setMandatory(true);
+            fields.add(field);
+        }
     }
 
     public MetaField createField(String name, String typeName, int type, boolean mandatoryIfNew ){

@@ -32,7 +32,7 @@ public class MetaCollection extends MetaObject {
     }
 
     public MetaIndex createMetaIndex(String name, boolean pk, boolean unique){
-        MetaIndex index = new MetaIndex( this, name, "_id_".endsWith( name), false );
+        MetaIndex index = new MetaIndex( this, name, "_id_".endsWith( name), unique );
         metaIndexes.add( index );
         return index;
     }

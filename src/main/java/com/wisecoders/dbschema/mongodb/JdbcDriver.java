@@ -84,7 +84,7 @@ public class JdbcDriver implements Driver
                 databaseName = urlWithoutParams.substring( idx + 1 );
             }
 
-            LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
+            //LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
             final WrappedMongoClient client = new WrappedMongoClient(url, info, databaseName, scan, expand );
             return new MongoConnection(client);
         }
