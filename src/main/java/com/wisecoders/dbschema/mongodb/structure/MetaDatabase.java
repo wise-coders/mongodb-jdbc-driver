@@ -13,27 +13,27 @@ import java.util.Map;
 public class MetaDatabase {
 
     public final String name;
-    private final Map<String, MetaCollection> collections = new HashMap<>();
+    private final Map<String, MetaCollection> metaCollections = new HashMap<>();
 
     public MetaDatabase( String name ){
         this.name =  name;
     }
 
-    public MetaCollection createCollection( String name ){
+    public MetaCollection createMetaCollection(String name ){
         MetaCollection metaCollection = new MetaCollection(this, name);
-        collections.put( name, metaCollection);
+        metaCollections.put( name, metaCollection);
         return metaCollection;
     }
 
-    public MetaCollection getCollection( String name ){
-        return collections.get( name );
+    public MetaCollection getMetaCollection(String name ){
+        return metaCollections.get( name );
     }
 
-    public Collection<MetaCollection> getCollections(){
-        return collections.values();
+    public Collection<MetaCollection> getMetaCollections(){
+        return metaCollections.values();
     }
 
-    public void dropCollection( String name ){
-        collections.remove( name );
+    public void dropMetaCollection(String name ){
+        metaCollections.remove( name );
     }
 }

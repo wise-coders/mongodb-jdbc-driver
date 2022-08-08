@@ -6,6 +6,7 @@ import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import org.bson.Document;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +27,18 @@ public class MetaCollection extends MetaObject {
 
     public static final Logger LOGGER = Logger.getLogger( MetaCollection.class.getName() );
 
-    public MetaCollection( final MetaDatabase metaDatabase, final String name ){
-        super( null, name, "object", TYPE_OBJECT);
+    public MetaCollection( final MetaDatabase metaDatabase, final String name ) {
+        super(null, name, "object", TYPE_OBJECT);
         this.metaDatabase = metaDatabase;
+        final MetaField id = new MetaField(this, "_id", "ObjectID", Types.ROWID);
+        id.setMandatory(true);
+        fields.add(id);
+        MetaIndex pkId = createMetaIndex( "_id_", true, false );
+        pkId.addColumn( id );
     }
 
     public MetaIndex createMetaIndex(String name, boolean pk, boolean unique){
-        MetaIndex index = new MetaIndex( this, name, "_id_".endsWith( name), unique );
+        MetaIndex index = new MetaIndex( this, name, pk, unique );
         metaIndexes.add( index );
         return index;
     }
@@ -46,6 +52,7 @@ public class MetaCollection extends MetaObject {
     private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy) {
         long scanStartTime = System.currentTimeMillis();
         long skipTime = 0;
+        LOGGER.info("Scan " + mongoCollection + " at " + System.currentTimeMillis());
         long documentCount = mongoCollection.count();
         int skipCount = 1;
         if ( documentCount > 2 * strategy.SCAN_FIRST_LAST ) {
@@ -54,10 +61,14 @@ public class MetaCollection extends MetaObject {
         long i = 0;
         final WrappedFindIterable jFindIterable = mongoCollection.find();
         for (Object o : jFindIterable) {
+            LOGGER.info("Scanning... " + mongoCollection + " at " + System.currentTimeMillis());
             scanDocument(o);
+            LOGGER.info("Scan done at " + System.currentTimeMillis());
             if (skipCount > 1 && i + skipCount < documentCount && i > strategy.SCAN_FIRST_LAST && i < documentCount - strategy.SCAN_FIRST_LAST) {
                 skipTime -= System.currentTimeMillis();
+                LOGGER.info("Skipping... " + skipCount + " at " + System.currentTimeMillis());
                 jFindIterable.skip(skipCount);
+                LOGGER.info("Skip done at " + System.currentTimeMillis());
                 skipTime += System.currentTimeMillis();
             }
             i++;

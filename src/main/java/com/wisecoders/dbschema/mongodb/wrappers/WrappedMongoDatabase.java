@@ -48,12 +48,12 @@ public class WrappedMongoDatabase implements ProxyObject {
                     Document definition = (Document) Util.getByPath(info, "options.validator.$jsonSchema");
                     if (definition != null) {
                         final String name = info.getString("name");
-                        final MetaCollection metaCollection = metaDatabase.createCollection(name);
+                        final MetaCollection metaCollection = metaDatabase.createMetaCollection(name);
                         try {
                             metaCollection.visitValidatorNode(null, true, definition);
                         } catch (Throwable ex) {
                             LOGGER.log(Level.SEVERE, "Error parsing validation rule for " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n", ex);
-                            metaDatabase.dropCollection(name);
+                            metaDatabase.dropMetaCollection(name);
                         }
                         metaCollection.scanIndexes(getCollection(name));
                     }
@@ -68,10 +68,10 @@ public class WrappedMongoDatabase implements ProxyObject {
     public MetaCollection getMetaCollection( String collectionName){
         if ( collectionName == null || collectionName.length() == 0 ) return null;
 
-        final MetaCollection metaCollection = metaDatabase.getCollection(collectionName);
+        final MetaCollection metaCollection = metaDatabase.getMetaCollection(collectionName);
         if (metaCollection == null) {
             try {
-                return metaDatabase.createCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy );
+                return metaDatabase.createMetaCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy );
             } catch ( Throwable ex ){
                 LOGGER.log(Level.SEVERE, "Error discovering collection " + mongoDatabase.getName() + "." + collectionName + ". ", ex );
             }
@@ -273,16 +273,18 @@ public class WrappedMongoDatabase implements ProxyObject {
     public void discoverReferences(MetaCollection master ){
         if ( !master.referencesDiscovered){
             try {
+                LOGGER.info("Discover references on " + master);
                 master.referencesDiscovered = true;
                 final List<MetaField> unsolvedFields = new ArrayList<>();
                 final List<MetaField> solvedFields = new ArrayList<>();
                 master.collectFieldsWithObjectId(unsolvedFields);
                 if ( !unsolvedFields.isEmpty() ){
-                    for ( MetaCollection _metaCollection : metaDatabase.getCollections() ){
+                    for ( MetaCollection _metaCollection : metaDatabase.getMetaCollections() ){
                         final WrappedMongoCollection mongoCollection = getCollection( _metaCollection.name );
                         if ( mongoCollection != null ){
                             for ( MetaField metaField : unsolvedFields ){
                                 for ( ObjectId objectId : metaField.objectIds){
+                                    LOGGER.info("Discover references do find() ");
                                     final Document query = new Document(); //new BasicDBObject();
                                     query.put("_id", objectId);
                                     if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
@@ -295,6 +297,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                         }
                     }
                 }
+                LOGGER.info("Discover references done.");
             } catch ( Throwable ex ){
                 LOGGER.log( Level.SEVERE, "Error discovering relationships.", ex );
             }

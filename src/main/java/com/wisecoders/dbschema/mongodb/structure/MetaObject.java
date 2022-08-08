@@ -25,11 +25,6 @@ public class MetaObject extends MetaField {
 
     MetaObject(MetaObject parentObject, String name, String typeName, int type ){
         super( parentObject, name, typeName, type );
-        if ( parentObject == null ) {
-            final MetaField field = new MetaField(this, "_id", "ObjectID", Types.ROWID);
-            field.setMandatory(true);
-            fields.add(field);
-        }
     }
 
     public MetaField createField(String name, String typeName, int type, boolean mandatoryIfNew ){
@@ -192,7 +187,7 @@ public class MetaObject extends MetaField {
                     }
                     if ( keyValue instanceof DBRef ){
                         DBRef ref = (DBRef)keyValue;
-                        MetaCollection targetCollection = getMetaCollection().metaDatabase.getCollection(ref.getCollectionName());
+                        MetaCollection targetCollection = getMetaCollection().metaDatabase.getMetaCollection(ref.getCollectionName());
                         if ( targetCollection != null ) {
                             field.createReferenceTo(targetCollection);
                         }

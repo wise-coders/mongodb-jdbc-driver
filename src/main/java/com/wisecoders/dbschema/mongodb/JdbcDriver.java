@@ -80,12 +80,15 @@ public class JdbcDriver implements Driver
                 newUrl = url.substring(0, idx) + "?" + sbParams;
             }
             String databaseName = "admin";
+            if ( urlWithoutParams.endsWith("/")) {
+                urlWithoutParams = urlWithoutParams.substring( 0, urlWithoutParams.length()-1);
+            }
             if ( ( idx = urlWithoutParams.lastIndexOf("/")) > 1 && urlWithoutParams.charAt( idx -1) != '/' ){
                 databaseName = urlWithoutParams.substring( idx + 1 );
             }
 
-            //LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
-            final WrappedMongoClient client = new WrappedMongoClient(url, info, databaseName, scan, expand );
+            LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
+            final WrappedMongoClient client = new WrappedMongoClient(newUrl, info, databaseName, scan, expand );
             return new MongoConnection(client);
         }
         return null;

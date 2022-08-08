@@ -6,6 +6,7 @@ import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 
 import java.sql.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
@@ -21,6 +22,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     private final static String DOCUMENT_TYPE_NAME = "DOCUMENT";
 
 
+    public static final java.util.logging.Logger LOGGER = Logger.getLogger( JdbcDriver.class.getName() );
 
 
     MongoDatabaseMetaData(MongoConnection con) {
@@ -84,12 +86,12 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
         String[] data = new String[10];
         data[0] = catalogName; // TABLE_CAT
-        data[1] = ""; // TABLE_SCHEM
+        data[1] = ""; // TABLE_SCHEMA
         data[2] = tableName; // TABLE_NAME
         data[3] = type; // TABLE_TYPE
         data[4] = collection != null ? collection.getDescription() : null; // REMARKS
         data[5] = ""; // TYPE_CAT
-        data[6] = ""; // TYPE_SCHEM
+        data[6] = ""; // TYPE_SCHEMA
         data[7] = ""; // TYPE_NAME
         data[8] = ""; // SELF_REFERENCING_COL_NAME
         data[9] = ""; // REF_GENERATION
@@ -1238,7 +1240,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         WrappedMongoDatabase db = con.client.getDatabase(catalogName);
         MetaCollection pkCollection = db.getMetaCollection(tableNamePattern);
         if ( pkCollection != null ){
-                for (MetaCollection fromCollection : db.metaDatabase.getCollections() ) {
+                for (MetaCollection fromCollection : db.metaDatabase.getMetaCollections() ) {
                     db.discoverReferences(fromCollection);
                     for (MetaField fromFiled : fromCollection.fields) {
                         getExportedKeysRecursive(result, pkCollection, fromCollection, fromFiled);

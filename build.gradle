@@ -19,11 +19,13 @@ repositories {
 }
 
 dependencies {
-    implementation "org.mongodb:mongodb-driver-sync:4.5.1"
-    implementation "org.graalvm.js:js:22.0.0.2"
-    implementation "org.graalvm.js:js-scriptengine:22.0.0.2"
-    implementation "com.google.code.gson:gson:2.8.9"
-    testImplementation 'junit:junit:4.12'
+    implementation 'org.mongodb:mongodb-driver-sync:4.7.1'
+    implementation 'org.graalvm.js:js:22.2.0'
+    implementation 'org.graalvm.js:js-scriptengine:22.2.0'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    testImplementation 'junit:junit:4.13.2'
+    //implementation "org.graalvm.sdk:graal-sdk:22.0.0.2"
+    //implementation "org.graalvm.truffle:truffle-api:22.0.0.2"
 }
 
 compileJava{
