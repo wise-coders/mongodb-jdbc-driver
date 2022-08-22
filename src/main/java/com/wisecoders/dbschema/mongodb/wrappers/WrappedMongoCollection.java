@@ -47,7 +47,7 @@ public class WrappedMongoCollection<TDocument> {
 
     @Override
     public String toString() {
-        return mongoCollection.toString();
+        return mongoCollection.getNamespace().getFullName();
     }
 
     public Object explain(){

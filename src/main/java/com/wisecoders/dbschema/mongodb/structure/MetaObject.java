@@ -87,7 +87,8 @@ public class MetaObject extends MetaField {
 
 
     public void visitValidatorNode(String name, boolean mandatory, Document bsonDefinition ) {
-        List<Object> enumValues = bsonDefinition.getList("enum", Object.class);
+        List<Object> enumValues = null;
+        try { enumValues = bsonDefinition.getList("enum", Object.class); } catch ( Throwable ex ){}
         if (enumValues == null) {
             String bsonType = Util.getBsonType( bsonDefinition );
             switch (bsonType) {
@@ -183,7 +184,7 @@ public class MetaObject extends MetaField {
                     MetaField field = createField((String) key, type, Util.getJavaType( keyValue ), isFirstDiscover );
                     // VALUES WHICH ARE OBJECTID AND ARE NOT _id IN THE ROOT MAP
                     if ( keyValue instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
-                        field.addObjectId((ObjectId) keyValue);
+                        field.setObjectId((ObjectId) keyValue);
                     }
                     if ( keyValue instanceof DBRef ){
                         DBRef ref = (DBRef)keyValue;

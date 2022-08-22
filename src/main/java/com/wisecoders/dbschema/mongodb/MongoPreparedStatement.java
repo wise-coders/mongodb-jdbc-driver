@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
 
 /**
@@ -41,8 +42,6 @@ public class MongoPreparedStatement implements PreparedStatement {
     private boolean isClosed = false;
     private int maxRows = -1;
     private final String query;
-
-    public static final Logger LOGGER = Logger.getLogger( MongoPreparedStatement.class.getName() );
 
     MongoPreparedStatement(final MongoConnection connection) {
         this.connection = connection;

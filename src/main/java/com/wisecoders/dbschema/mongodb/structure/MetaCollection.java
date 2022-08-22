@@ -1,6 +1,7 @@
 package com.wisecoders.dbschema.mongodb.structure;
 
 import com.mongodb.client.ListIndexesIterable;
+import com.mongodb.client.MongoCursor;
 import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
+
 /**
  * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
  * Free to use by everyone, code modifications allowed only to
@@ -20,12 +23,9 @@ import java.util.logging.Logger;
  */
 public class MetaCollection extends MetaObject {
 
-    public boolean referencesDiscovered = false;
     public final MetaDatabase metaDatabase;
 
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
-
-    public static final Logger LOGGER = Logger.getLogger( MetaCollection.class.getName() );
 
     public MetaCollection( final MetaDatabase metaDatabase, final String name ) {
         super(null, name, "object", TYPE_OBJECT);
@@ -51,33 +51,30 @@ public class MetaCollection extends MetaObject {
 
     private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy) {
         long scanStartTime = System.currentTimeMillis();
-        long skipTime = 0;
-        LOGGER.info("Scan " + mongoCollection + " at " + System.currentTimeMillis());
-        long documentCount = mongoCollection.count();
-        int skipCount = 1;
-        if ( documentCount > 2 * strategy.SCAN_FIRST_LAST ) {
-            skipCount =  (int)Math.max( 1, ( documentCount - (2 * strategy.SCAN_FIRST_LAST) ) / strategy.SCAN_BETWEEN );
-        }
-        long i = 0;
-        final WrappedFindIterable jFindIterable = mongoCollection.find();
-        for (Object o : jFindIterable) {
-            LOGGER.info("Scanning... " + mongoCollection + " at " + System.currentTimeMillis());
-            scanDocument(o);
-            LOGGER.info("Scan done at " + System.currentTimeMillis());
-            if (skipCount > 1 && i + skipCount < documentCount && i > strategy.SCAN_FIRST_LAST && i < documentCount - strategy.SCAN_FIRST_LAST) {
-                skipTime -= System.currentTimeMillis();
-                LOGGER.info("Skipping... " + skipCount + " at " + System.currentTimeMillis());
-                jFindIterable.skip(skipCount);
-                LOGGER.info("Skip done at " + System.currentTimeMillis());
-                skipTime += System.currentTimeMillis();
-            }
-            i++;
-            // DON'T SCAN IF THE FIELD COUNT IS ALREADY TOO HIGH
-            if ( getFieldCount() > 400 || System.currentTimeMillis() - scanStartTime > 4000 ){
-                break;
+        long cnt = 0;
+        {
+            final MongoCursor cursor = mongoCollection.find().iterator();
+            try {
+                while (cursor.hasNext() && ++cnt < strategy.SCAN_COUNT) {
+                    scanDocument(cursor.next());
+                }
+            } finally {
+                cursor.close();
             }
         }
-        LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " with " + documentCount + " documents, " + i + " scanned, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms, skipTime=" + skipTime );
+        if ( getFieldCount() < 400 && cnt < strategy.SCAN_COUNT && strategy != ScanStrategy.full ){
+            int cnt2 = 0;
+            final MongoCursor cursor = mongoCollection.find().sort("{_id:-1}").iterator();
+            try {
+                while ( cursor.hasNext() && ++cnt2 < strategy.SCAN_COUNT ) {
+                    scanDocument(cursor.next());
+                }
+            } finally {
+                cursor.close();
+            }
+            cnt +=cnt2;
+        }
+        LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " " + cnt + " documents, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms" );
     }
 
     private static final String KEY_NAME = "name";

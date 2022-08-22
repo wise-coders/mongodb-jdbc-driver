@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
+
 
 /**
  * Wrapper class around MongoDatabase with direct access to collections as member variables.
@@ -35,8 +37,6 @@ public class WrappedMongoDatabase implements ProxyObject {
     private final MongoDatabase mongoDatabase;
     private final ScanStrategy scanStrategy;
     public final MetaDatabase metaDatabase;
-
-    public static final Logger LOGGER = Logger.getLogger( WrappedMongoDatabase.class.getName() );
 
     WrappedMongoDatabase( MongoDatabase mongoDatabase, ScanStrategy scanStrategy ){
         this.mongoDatabase = mongoDatabase;
@@ -270,39 +270,6 @@ public class WrappedMongoDatabase implements ProxyObject {
         mongoDatabase.createCollection( s );
     }
 
-    public void discoverReferences(MetaCollection master ){
-        if ( !master.referencesDiscovered){
-            try {
-                LOGGER.info("Discover references on " + master);
-                master.referencesDiscovered = true;
-                final List<MetaField> unsolvedFields = new ArrayList<>();
-                final List<MetaField> solvedFields = new ArrayList<>();
-                master.collectFieldsWithObjectId(unsolvedFields);
-                if ( !unsolvedFields.isEmpty() ){
-                    for ( MetaCollection _metaCollection : metaDatabase.getMetaCollections() ){
-                        final WrappedMongoCollection mongoCollection = getCollection( _metaCollection.name );
-                        if ( mongoCollection != null ){
-                            for ( MetaField metaField : unsolvedFields ){
-                                for ( ObjectId objectId : metaField.objectIds){
-                                    LOGGER.info("Discover references do find() ");
-                                    final Document query = new Document(); //new BasicDBObject();
-                                    query.put("_id", objectId);
-                                    if ( !solvedFields.contains( metaField ) && mongoCollection.find(query).iterator().hasNext()) {
-                                        solvedFields.add( metaField );
-                                        metaField.createReferenceTo(_metaCollection);
-                                        LOGGER.log(Level.INFO, "Found relationship  " + metaField.parentObject.name + " ( " + metaField.name + " ) ref " + _metaCollection.name);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                LOGGER.info("Discover references done.");
-            } catch ( Throwable ex ){
-                LOGGER.log( Level.SEVERE, "Error discovering relationships.", ex );
-            }
-        }
-    }
 
 }
 

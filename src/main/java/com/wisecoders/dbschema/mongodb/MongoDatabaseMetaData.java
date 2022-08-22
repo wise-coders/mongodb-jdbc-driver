@@ -22,9 +22,6 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     private final static String DOCUMENT_TYPE_NAME = "DOCUMENT";
 
 
-    public static final java.util.logging.Logger LOGGER = Logger.getLogger( JdbcDriver.class.getName() );
-
-
     MongoDatabaseMetaData(MongoConnection con) {
         this.con = con;
     }
@@ -1238,10 +1235,10 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 "FKTABLE_NAME", "FKCOLUMN_NAME", "KEY_SEQ", "UPDATE_RULE", "DELETE_RULE", "FK_NAME", "PK_NAME", "DEFERRABILITY"});
 
         WrappedMongoDatabase db = con.client.getDatabase(catalogName);
+        db.metaDatabase.discoverReferences( db );
         MetaCollection pkCollection = db.getMetaCollection(tableNamePattern);
         if ( pkCollection != null ){
                 for (MetaCollection fromCollection : db.metaDatabase.getMetaCollections() ) {
-                    db.discoverReferences(fromCollection);
                     for (MetaField fromFiled : fromCollection.fields) {
                         getExportedKeysRecursive(result, pkCollection, fromCollection, fromFiled);
                     }
@@ -1292,8 +1289,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
 
         WrappedMongoDatabase db = con.client.getDatabase(catalogName);
         MetaCollection fromCollection = db.getMetaCollection( tableNamePattern);
+        db.metaDatabase.discoverReferences( db );
         if ( fromCollection != null ){
-            db.discoverReferences(fromCollection);
             for ( MetaField fromFiled : fromCollection.fields ){
                 getImportedKeysRecursive(result, fromFiled);
             }

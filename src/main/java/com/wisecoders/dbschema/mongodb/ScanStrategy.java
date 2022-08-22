@@ -11,12 +11,11 @@ package com.wisecoders.dbschema.mongodb;
 public enum ScanStrategy {
 
 
-    fast(50, 200), medium(200, 500), full( Long.MAX_VALUE, Long.MAX_VALUE);
+    fast(50), medium(200 ), full( Long.MAX_VALUE );
 
-    public long SCAN_FIRST_LAST, SCAN_BETWEEN;
+    public final long SCAN_COUNT;
 
-    ScanStrategy( long scanFistLast, long scanBetween ){
-        this.SCAN_FIRST_LAST = scanFistLast;
-        this.SCAN_BETWEEN = scanBetween;
+    ScanStrategy( long scanFistLast ){
+        this.SCAN_COUNT = scanFistLast;
     }
 }

@@ -15,7 +15,7 @@ public class MetaField {
 
     public final MetaObject parentObject;
     public final String name, typeName;
-    public final List<ObjectId> objectIds = new ArrayList<>();
+    public ObjectId objectId;
     public final int type;
     public final List<MetaReference> references = new ArrayList<>();
     private boolean mandatory = true;
@@ -30,10 +30,14 @@ public class MetaField {
         this.type = type;
     }
 
-    void addObjectId(ObjectId objectId){
-        if ( objectIds.size() < 4 ){
-            objectIds.add( objectId );
+    void setObjectId(ObjectId objectId){
+        if ( objectId != null ){
+            this.objectId = objectId;
         }
+    }
+
+    public ObjectId getObjectId(){
+        return objectId;
     }
 
     public String getNameWithPath(){
@@ -64,7 +68,7 @@ public class MetaField {
     }
 
     public void collectFieldsWithObjectId(List<MetaField> unsolvedFields) {
-        if ( !objectIds.isEmpty() ){
+        if ( objectId != null ){
             unsolvedFields.add(this);
         }
     }

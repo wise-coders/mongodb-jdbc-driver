@@ -27,16 +27,16 @@ public class JdbcDriver implements Driver
     static {
         try {
             DriverManager.registerDriver( new JdbcDriver());
-            LOGGER.setLevel(Level.SEVERE);
-            final ConsoleHandler consoleHandler = new ConsoleHandler();
-            consoleHandler.setLevel(Level.FINEST);
-            consoleHandler.setFormatter(new SimpleFormatter());
+            LOGGER.setLevel(Level.ALL);
 
-            LOGGER.setLevel(Level.FINEST);
+            final ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setLevel(Level.ALL);
+            consoleHandler.setFormatter(new SimpleFormatter());
             LOGGER.addHandler(consoleHandler);
 
             final FileHandler fileHandler = new FileHandler(System.getProperty("user.home") + "/.DbSchema/logs/MongoDbJdbcDriver.log");
             fileHandler.setFormatter( new SimpleFormatter());
+            fileHandler.setLevel(Level.ALL);
             LOGGER.addHandler(fileHandler);
 
         } catch ( Exception ex ){
@@ -69,7 +69,9 @@ public class JdbcDriver implements Driver
                     String[] pairArr = pair.split("=");
                     String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
                     switch( key ){
-                        case "scan": try { scan = ScanStrategy.valueOf( pairArr[1]);} catch ( IllegalArgumentException ex ){} break;
+                        case "scan": try { scan = ScanStrategy.valueOf( pairArr[1]);} catch ( IllegalArgumentException ex ){}
+                            LOGGER.info("ScanStrategy=" + scan);
+                            break;
                         case "expand": expand = Boolean.parseBoolean( pairArr[1]); break;
                         default:
                             if ( sbParams.length() > 0 ) sbParams.append("&");
