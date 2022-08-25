@@ -15,9 +15,8 @@ import java.util.*;
  * We need to do this as the result document can be first time for example {firstname='Luise'} and second record {firstname='John',lastname='Carry'}.
  * I mean with this that some keys may miss in some records, so expanding should look ahead for all possible keys.
  *
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 public class ResultSetIterator implements ResultSet {
 

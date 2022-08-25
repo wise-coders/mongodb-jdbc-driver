@@ -1,6 +1,7 @@
 package com.wisecoders.dbschema.mongodb;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,9 +16,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 
 public class Util {
@@ -76,7 +76,6 @@ public class Util {
         else if ( value instanceof Double ) return java.sql.Types.DOUBLE;
         return java.sql.Types.VARCHAR;
     }
-
 
     public static boolean isListOfDocuments(Object obj){
         if ( obj instanceof List){

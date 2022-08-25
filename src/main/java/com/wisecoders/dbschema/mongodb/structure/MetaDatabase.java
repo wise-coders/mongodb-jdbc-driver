@@ -12,9 +12,8 @@ import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 public class MetaDatabase {
 
@@ -53,7 +52,7 @@ public class MetaDatabase {
     public void discoverReferences(WrappedMongoDatabase mongoDatabase ){
         if ( !referencesDiscovered){
             try {
-                LOGGER.info("Discover references in database " + name );
+                LOGGER.info("Discover relationships in database " + name );
                 referencesDiscovered = true;
                 final List<MetaField> metaFields = new ArrayList<>();
                 collectFieldsWithObjectId(metaFields);
@@ -86,7 +85,7 @@ public class MetaDatabase {
                         }
                     }
                 }
-                LOGGER.info("Discover references done.");
+                LOGGER.info("Discover relationships done.");
             } catch ( Throwable ex ){
                 LOGGER.log( Level.SEVERE, "Error discovering relationships.", ex );
             }

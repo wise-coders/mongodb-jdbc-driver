@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 public class MongoDatabaseMetaData implements DatabaseMetaData
 {
@@ -129,8 +128,8 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                 null, // "TABLE_SCHEMA",
                 collection.name, // "TABLE_NAME", (i.e. MongoDB Collection Name)
                 field.getNameWithPath(), // "COLUMN_NAME",
-                "" + field.type, // "DATA_TYPE",
-                field.typeName, // "TYPE_NAME",
+                "" + field.getJavaType(), // "DATA_TYPE",
+                field.getTypeName(), // "TYPE_NAME",
                 "800", // "COLUMN_SIZE",
                 "0", // "BUFFER_LENGTH", (not used)
                 "0", // "DECIMAL_DIGITS",

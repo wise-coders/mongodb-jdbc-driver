@@ -6,6 +6,7 @@ import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -17,9 +18,8 @@ import java.util.logging.Logger;
 import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 public class MetaCollection extends MetaObject {
 
@@ -28,13 +28,16 @@ public class MetaCollection extends MetaObject {
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
 
     public MetaCollection( final MetaDatabase metaDatabase, final String name ) {
-        super(null, name, "object", TYPE_OBJECT);
+        super(null, name );
         this.metaDatabase = metaDatabase;
-        final MetaField id = new MetaField(this, "_id", "ObjectID", Types.ROWID);
-        id.setMandatory(true);
-        fields.add(id);
+        setTypeName("object");
+        setJavaType( TYPE_OBJECT );
+        final MetaField idField = new MetaField(this, "_id" );
+        idField.setMandatory(true);
+        idField.setTypeClass( ObjectId.class );
+        fields.add(idField);
         MetaIndex pkId = createMetaIndex( "_id_", true, false );
-        pkId.addColumn( id );
+        pkId.addColumn( idField );
     }
 
     public MetaIndex createMetaIndex(String name, boolean pk, boolean unique){
@@ -51,30 +54,21 @@ public class MetaCollection extends MetaObject {
 
     private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy) {
         long scanStartTime = System.currentTimeMillis();
-        long cnt = 0;
-        {
-            final MongoCursor cursor = mongoCollection.find().iterator();
-            try {
-                while (cursor.hasNext() && ++cnt < strategy.SCAN_COUNT) {
-                    scanDocument(cursor.next());
-                }
-            } finally {
-                cursor.close();
-            }
-        }
+        long cnt = scan(mongoCollection, strategy, true);
         if ( getFieldCount() < 400 && cnt < strategy.SCAN_COUNT && strategy != ScanStrategy.full ){
-            int cnt2 = 0;
-            final MongoCursor cursor = mongoCollection.find().sort("{_id:-1}").iterator();
-            try {
-                while ( cursor.hasNext() && ++cnt2 < strategy.SCAN_COUNT ) {
-                    scanDocument(cursor.next());
-                }
-            } finally {
-                cursor.close();
-            }
-            cnt +=cnt2;
+            cnt +=scan(mongoCollection, strategy, false);;
         }
         LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " " + cnt + " documents, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms" );
+    }
+
+    private long scan(WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean directionUp ) {
+        long cnt = 0;
+        try ( MongoCursor cursor = mongoCollection.find().sort("{_id:" + (directionUp ? "1" : "-1") + "}" ).iterator() ) {
+            while (cursor.hasNext() && ++cnt < strategy.SCAN_COUNT) {
+                scanDocument(cursor.next());
+            }
+        }
+        return cnt;
     }
 
     private static final String KEY_NAME = "name";

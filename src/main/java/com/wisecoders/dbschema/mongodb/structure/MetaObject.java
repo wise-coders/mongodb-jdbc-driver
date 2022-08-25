@@ -7,14 +7,11 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with DbSchema Database Designer https://dbschema.com
- * Free to use by everyone, code modifications allowed only to
- * the public repository https://github.com/wise-coders/mongodb-jdbc-driver
+ * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
+ * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
  */
 public class MetaObject extends MetaField {
 
@@ -23,45 +20,71 @@ public class MetaObject extends MetaField {
 
     public final List<MetaField> fields = new ArrayList<>();
 
-    MetaObject(MetaObject parentObject, String name, String typeName, int type ){
-        super( parentObject, name, typeName, type );
+    MetaObject(MetaObject parentObject, String name ){
+        super( parentObject, name );
     }
 
-    public MetaField createField(String name, String typeName, int type, boolean mandatoryIfNew ){
-        for ( MetaField column : fields){
-            if ( column.name.equals( name )) return column;
+    public MetaField getField( String name ){
+        for ( MetaField field : fields){
+            if ( field.name.equals( name )) return field;
         }
-        final MetaField field = new MetaField( this, name, typeName, type );
-        field.setMandatory(mandatoryIfNew);
+        return null;
+    }
+
+    public MetaField createField(String name){
+        final MetaField field = new MetaField( this, name );
         fields.add( field );
+        Collections.sort( fields, FIELDS_COMPARATOR );
         return field;
     }
 
-    public MetaObject createObjectField(String name, boolean mandatoryIfNew){
+    public MetaField createField(String name, String typeName, int javaType, boolean mandatory ){
+        for ( MetaField field : fields){
+            if ( field.name.equals( name )) return field;
+        }
+        final MetaField field = new MetaField( this, name );
+        field.setTypeName( typeName );
+        field.setJavaType( javaType );
+        field.setMandatory( mandatory );
+        fields.add( field );
+        Collections.sort( fields, FIELDS_COMPARATOR );
+        return field;
+    }
+
+    public MetaObject createObjectField(String name, boolean mandatory ){
         for ( MetaField field : fields){
             if ( field instanceof MetaObject && field.name.equals( name )) return (MetaObject)field;
         }
-        MetaObject json = new MetaObject( this, name, "object",  TYPE_OBJECT);
+        MetaObject json = new MetaObject( this, name );
+        json.setTypeName("object");
+        json.setJavaType( TYPE_OBJECT );
         fields.add( json );
-        json.setMandatory( mandatoryIfNew );
+        Collections.sort( fields, FIELDS_COMPARATOR );
+        json.setMandatory( mandatory );
         return json;
     }
+
+    static final Comparator<MetaField> FIELDS_COMPARATOR = (o1, o2) -> {
+        if (o1.equals(o2)) {
+            return 0;
+        } else if ("_id".equals(o1.name)) {
+            return -1;
+        } else if ( "_id".equals(o2.name)) {
+            return 1;
+        }
+        return o1.name.compareTo(o2.name);
+    };
 
     public MetaObject createArrayField(String name, String typeName, boolean mandatoryIfNew){
         for ( MetaField field : fields){
             if ( field instanceof MetaObject && field.name.equals( name )) return (MetaObject)field;
         }
-        MetaObject json = new MetaObject( this, name, typeName, TYPE_ARRAY);
+        MetaObject json = new MetaObject( this, name );
+        json.setTypeName( typeName );
+        json.setJavaType( TYPE_ARRAY );
         json.setMandatory( mandatoryIfNew);
         fields.add( json );
         return json;
-    }
-
-    public MetaField getColumn ( String name ){
-        for ( MetaField column : fields){
-            if ( column.name.equals( name ) ) return column;
-        }
-        return null;
     }
 
     @Override
@@ -117,7 +140,9 @@ public class MetaObject extends MetaField {
                 }
                 break;
                 default: {
-                    final MetaField metaField = createField(name, bsonType, Util.getJavaType(bsonType), mandatory);
+                    final MetaField metaField = createField(name );
+                    metaField.setTypeName( bsonType );
+                    metaField.setMandatory( mandatory );
                     metaField.setDescription( bsonDefinition.getString("description") );
                     if ( bsonDefinition.containsKey("pattern"))metaField.addOption("pattern:'" + bsonDefinition.get("pattern")  +"'");
                     if ( bsonDefinition.containsKey("minimum"))metaField.addOption("minimum:" + bsonDefinition.get("minimum"));
@@ -126,7 +151,10 @@ public class MetaObject extends MetaField {
                 break;
             }
         } else {
-            final MetaField field = createField(name, "enum", Types.ARRAY, mandatory);
+            final MetaField field = createField(name);
+            field.setTypeName( "enum");
+            field.setJavaType( Types.ARRAY );
+            field.setMandatory( mandatory );
             String anEnum = new GsonBuilder().create().toJson(bsonDefinition.getList("enum", Object.class));
             if ( anEnum.startsWith("[") && anEnum.endsWith("]")){
                 anEnum = anEnum.substring( 1, anEnum.length()-1);
@@ -155,11 +183,9 @@ public class MetaObject extends MetaField {
         if ( objDocument instanceof Map){
             Map document = (Map)objDocument;
             for ( Object key : document.keySet() ){
-                final Object keyValue = document.get( key );
-                String type =( keyValue != null ? keyValue.getClass().getName() : "String" );
-                if ( type.lastIndexOf('.') > 0 ) type = type.substring( type.lastIndexOf('.') + 1 );
-                if ( keyValue instanceof Map ) {
-                    Map subMap = (Map)keyValue;
+                final Object value = document.get( key );
+                if ( value instanceof Map ) {
+                    Map subMap = (Map)value;
                     // "suburbs":[ { name: "Scarsdale" }, { name: "North Hills" } ] WOULD GENERATE SUB-ENTITIES 0,1,2,... FOR EACH LIST ENTRY. SKIP THIS
                     if ( Util.allKeysAreNumbers( subMap )){
                         final MetaObject childrenMap = createArrayField(key.toString(), "array[int]", isFirstDiscover );
@@ -168,26 +194,30 @@ public class MetaObject extends MetaField {
                         }
                     } else {
                         final MetaObject childrenMap = createObjectField(key.toString(), isFirstDiscover );
-                        childrenMap.scanDocument( keyValue);
+                        childrenMap.scanDocument( value);
                     }
-                } else if ( keyValue instanceof List){
-                    final List list = (List)keyValue;
-                    if ( (list.isEmpty() || Util.isListOfDocuments(keyValue))  ) {
+                } else if ( value instanceof List){
+                    if ( (Util.isListOfDocuments(value))  ) {
                         final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover );
-                        for ( Object child : (List)keyValue ){
+                        for ( Object child : (List)value ){
                             subDocument.scanDocument( child);
                         }
                     } else {
-                        createField((String) key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover );
+                        createField( (String)key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover  );
                     }
                 } else {
-                    MetaField field = createField((String) key, type, Util.getJavaType( keyValue ), isFirstDiscover );
-                    // VALUES WHICH ARE OBJECTID AND ARE NOT _id IN THE ROOT MAP
-                    if ( keyValue instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
-                        field.setObjectId((ObjectId) keyValue);
+                    MetaField field = getField( (String)key );
+                    if ( field == null ){
+                        field = createField( (String)key );
+                        field.setMandatory( isFirstDiscover );
                     }
-                    if ( keyValue instanceof DBRef ){
-                        DBRef ref = (DBRef)keyValue;
+                    field.setTypeFromValue( value );
+                    // VALUES WHICH ARE OBJECTID AND ARE NOT _id IN THE ROOT MAP
+                    if ( value instanceof ObjectId && !"_id".equals( field.getNameWithPath() ) ){
+                        field.setObjectId((ObjectId) value);
+                    }
+                    if ( value instanceof DBRef ){
+                        DBRef ref = (DBRef)value;
                         MetaCollection targetCollection = getMetaCollection().metaDatabase.getMetaCollection(ref.getCollectionName());
                         if ( targetCollection != null ) {
                             field.createReferenceTo(targetCollection);
