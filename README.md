@@ -23,6 +23,8 @@ deduce a logical structure of the database. We presume that collections are stor
 scanning random documents from each collection.
 The number of scanned documents can be set in the URL using the parameter scan=<fast|medium|full>.
 
+* The collection fields can be sorted by adding sort=true in the URL.
+
 
 ## License
 

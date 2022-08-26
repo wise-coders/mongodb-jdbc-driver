@@ -36,11 +36,13 @@ public class WrappedMongoDatabase implements ProxyObject {
     private final MongoDatabase mongoDatabase;
     private final ScanStrategy scanStrategy;
     public final MetaDatabase metaDatabase;
+    private final boolean sortFields;
 
-    WrappedMongoDatabase( MongoDatabase mongoDatabase, ScanStrategy scanStrategy ){
+    WrappedMongoDatabase( MongoDatabase mongoDatabase, ScanStrategy scanStrategy, boolean sortFields ){
         this.mongoDatabase = mongoDatabase;
         this.scanStrategy = scanStrategy;
         this.metaDatabase = new MetaDatabase(mongoDatabase.getName());
+        this.sortFields = sortFields;
         try {
             if ( !"config".equals(mongoDatabase.getName()) && !"admin".equals(mongoDatabase.getName()) && !"local".equals(mongoDatabase.getName())) {
                 for (Document info : mongoDatabase.listCollections()) {
@@ -49,7 +51,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                         final String name = info.getString("name");
                         final MetaCollection metaCollection = metaDatabase.createMetaCollection(name);
                         try {
-                            metaCollection.visitValidatorNode(null, true, definition);
+                            metaCollection.visitValidatorNode(null, true, definition, sortFields );
                         } catch (Throwable ex) {
                             LOGGER.log(Level.SEVERE, "Error parsing validation rule for " + name + "\n\n" + new GsonBuilder().setPrettyPrinting().create().toJson(definition) + "\n", ex);
                             metaDatabase.dropMetaCollection(name);
@@ -63,6 +65,12 @@ public class WrappedMongoDatabase implements ProxyObject {
         }
     }
 
+    public MetaCollection getMetaCollectionIfAlreadyLoaded( String collectionName) {
+        if (collectionName == null || collectionName.length() == 0) return null;
+
+        return metaDatabase.getMetaCollection(collectionName);
+    }
+
 
     public MetaCollection getMetaCollection( String collectionName){
         if ( collectionName == null || collectionName.length() == 0 ) return null;
@@ -70,7 +78,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         final MetaCollection metaCollection = metaDatabase.getMetaCollection(collectionName);
         if (metaCollection == null) {
             try {
-                return metaDatabase.createMetaCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy );
+                return metaDatabase.createMetaCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy, sortFields );
             } catch ( Throwable ex ){
                 LOGGER.log(Level.SEVERE, "Error discovering collection " + mongoDatabase.getName() + "." + collectionName + ". ", ex );
             }

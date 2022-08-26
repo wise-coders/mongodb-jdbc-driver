@@ -46,26 +46,26 @@ public class MetaCollection extends MetaObject {
         return index;
     }
 
-    public MetaCollection scanDocumentsAndIndexes(final WrappedMongoCollection mongoCollection, final ScanStrategy strategy ) {
-        scanDocuments( mongoCollection, strategy );
+    public MetaCollection scanDocumentsAndIndexes(final WrappedMongoCollection mongoCollection, final ScanStrategy strategy, boolean sortFields ) {
+        scanDocuments( mongoCollection, strategy, sortFields );
         scanIndexes( mongoCollection );
         return this;
     }
 
-    private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy) {
+    private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean sortFields ) {
         long scanStartTime = System.currentTimeMillis();
-        long cnt = scan(mongoCollection, strategy, true);
+        long cnt = scan(mongoCollection, strategy, true, sortFields);
         if ( getFieldCount() < 400 && cnt < strategy.SCAN_COUNT && strategy != ScanStrategy.full ){
-            cnt +=scan(mongoCollection, strategy, false);;
+            cnt +=scan(mongoCollection, strategy, false, sortFields);;
         }
         LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " " + cnt + " documents, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms" );
     }
 
-    private long scan(WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean directionUp ) {
+    private long scan(WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean directionUp, boolean sortFields ) {
         long cnt = 0;
         try ( MongoCursor cursor = mongoCollection.find().sort("{_id:" + (directionUp ? "1" : "-1") + "}" ).iterator() ) {
             while (cursor.hasNext() && ++cnt < strategy.SCAN_COUNT) {
-                scanDocument(cursor.next());
+                scanDocument(cursor.next(), sortFields);
             }
         }
         return cnt;

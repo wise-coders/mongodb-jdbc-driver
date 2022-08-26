@@ -31,14 +31,16 @@ public class MetaObject extends MetaField {
         return null;
     }
 
-    public MetaField createField(String name){
+    public MetaField createField(String name, boolean sortFields ){
         final MetaField field = new MetaField( this, name );
         fields.add( field );
-        Collections.sort( fields, FIELDS_COMPARATOR );
+        if ( sortFields ) {
+            Collections.sort(fields, FIELDS_COMPARATOR);
+        }
         return field;
     }
 
-    public MetaField createField(String name, String typeName, int javaType, boolean mandatory ){
+    public MetaField createField(String name, String typeName, int javaType, boolean mandatory, boolean sortFields ){
         for ( MetaField field : fields){
             if ( field.name.equals( name )) return field;
         }
@@ -47,11 +49,13 @@ public class MetaObject extends MetaField {
         field.setJavaType( javaType );
         field.setMandatory( mandatory );
         fields.add( field );
-        Collections.sort( fields, FIELDS_COMPARATOR );
+        if ( sortFields ) {
+            Collections.sort(fields, FIELDS_COMPARATOR);
+        }
         return field;
     }
 
-    public MetaObject createObjectField(String name, boolean mandatory ){
+    public MetaObject createObjectField(String name, boolean mandatory, boolean sortFields ){
         for ( MetaField field : fields){
             if ( field instanceof MetaObject && field.name.equals( name )) return (MetaObject)field;
         }
@@ -59,7 +63,9 @@ public class MetaObject extends MetaField {
         json.setTypeName("object");
         json.setJavaType( TYPE_OBJECT );
         fields.add( json );
-        Collections.sort( fields, FIELDS_COMPARATOR );
+        if ( sortFields ){
+            Collections.sort( fields, FIELDS_COMPARATOR );
+        }
         json.setMandatory( mandatory );
         return json;
     }
@@ -75,7 +81,7 @@ public class MetaObject extends MetaField {
         return o1.name.compareTo(o2.name);
     };
 
-    public MetaObject createArrayField(String name, String typeName, boolean mandatoryIfNew){
+    public MetaObject createArrayField(String name, String typeName, boolean mandatoryIfNew, boolean sortFields){
         for ( MetaField field : fields){
             if ( field instanceof MetaObject && field.name.equals( name )) return (MetaObject)field;
         }
@@ -84,6 +90,9 @@ public class MetaObject extends MetaField {
         json.setJavaType( TYPE_ARRAY );
         json.setMandatory( mandatoryIfNew);
         fields.add( json );
+        if ( sortFields ){
+            Collections.sort( fields, FIELDS_COMPARATOR );
+        }
         return json;
     }
 
@@ -109,15 +118,15 @@ public class MetaObject extends MetaField {
     }
 
 
-    public void visitValidatorNode(String name, boolean mandatory, Document bsonDefinition ) {
+    public void visitValidatorNode(String name, boolean mandatory, Document bsonDefinition, boolean sortFields ) {
         List<Object> enumValues = null;
         try { enumValues = bsonDefinition.getList("enum", Object.class); } catch ( Throwable ex ){}
         if (enumValues == null) {
             String bsonType = Util.getBsonType( bsonDefinition );
             switch (bsonType) {
                 case "object": {
-                    final MetaObject intoObject = (name != null) ? createObjectField(name, mandatory) : this;
-                    intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class));
+                    final MetaObject intoObject = (name != null) ? createObjectField(name, mandatory, sortFields ) : this;
+                    intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class), sortFields);
                     intoObject.setDescription( bsonDefinition.getString("description"));
                 }
                 break;
@@ -126,21 +135,21 @@ public class MetaObject extends MetaField {
                     if ( itemsDefinition != null ) {
                         String itemType = Util.getBsonType(itemsDefinition);
 
-                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[" + itemType + "]", mandatory) : this;
+                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[" + itemType + "]", mandatory, sortFields) : this;
                         intoObject.setDescription(bsonDefinition.getString("description"));
                         final Document objDefinition = (Document) itemsDefinition.get("properties");
                         if (objDefinition != null) {
-                            intoObject.visitValidatorFields(objDefinition, bsonDefinition.getList("required", String.class));
+                            intoObject.visitValidatorFields(objDefinition, bsonDefinition.getList("required", String.class), sortFields);
                         }
                     } else if ( bsonDefinition.get("properties") != null ){
-                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[object]", mandatory) : this;
-                        intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class));
+                        MetaObject intoObject = (name != null) ? createArrayField(name, "array[object]", mandatory, sortFields ) : this;
+                        intoObject.visitValidatorFields((Document) bsonDefinition.get("properties"), bsonDefinition.getList("required", String.class), sortFields);
                         intoObject.setDescription( bsonDefinition.getString("description"));
                     }
                 }
                 break;
                 default: {
-                    final MetaField metaField = createField(name );
+                    final MetaField metaField = createField(name, sortFields );
                     metaField.setTypeName( bsonType );
                     metaField.setMandatory( mandatory );
                     metaField.setDescription( bsonDefinition.getString("description") );
@@ -151,7 +160,7 @@ public class MetaObject extends MetaField {
                 break;
             }
         } else {
-            final MetaField field = createField(name);
+            final MetaField field = createField(name, sortFields );
             field.setTypeName( "enum");
             field.setJavaType( Types.ARRAY );
             field.setMandatory( mandatory );
@@ -165,12 +174,12 @@ public class MetaObject extends MetaField {
     }
 
 
-    private void visitValidatorFields(Document document, List<String> requiredFields) {
+    private void visitValidatorFields(Document document, List<String> requiredFields, boolean sortFields ) {
         if ( document != null ) {
             for (Map.Entry<String, Object> entry : document.entrySet()) {
                 if ( entry.getValue() != null ) {
                     boolean mandatory = requiredFields != null && requiredFields.contains(entry.getKey());
-                    visitValidatorNode(entry.getKey(), mandatory, (Document) entry.getValue());
+                    visitValidatorNode(entry.getKey(), mandatory, (Document) entry.getValue(), sortFields );
                 }
             }
         }
@@ -179,7 +188,7 @@ public class MetaObject extends MetaField {
 
     private boolean isFirstDiscover = true;
 
-    protected void scanDocument(Object objDocument){
+    protected void scanDocument(Object objDocument, boolean sortFields ){
         if ( objDocument instanceof Map){
             Map document = (Map)objDocument;
             for ( Object key : document.keySet() ){
@@ -188,27 +197,27 @@ public class MetaObject extends MetaField {
                     Map subMap = (Map)value;
                     // "suburbs":[ { name: "Scarsdale" }, { name: "North Hills" } ] WOULD GENERATE SUB-ENTITIES 0,1,2,... FOR EACH LIST ENTRY. SKIP THIS
                     if ( Util.allKeysAreNumbers( subMap )){
-                        final MetaObject childrenMap = createArrayField(key.toString(), "array[int]", isFirstDiscover );
+                        final MetaObject childrenMap = createArrayField(key.toString(), "array[int]", isFirstDiscover, sortFields );
                         for ( Object subKey : subMap.keySet() ) {
-                            childrenMap.scanDocument(subMap.get( subKey ));
+                            childrenMap.scanDocument(subMap.get( subKey ), sortFields );
                         }
                     } else {
-                        final MetaObject childrenMap = createObjectField(key.toString(), isFirstDiscover );
-                        childrenMap.scanDocument( value);
+                        final MetaObject childrenMap = createObjectField(key.toString(), isFirstDiscover, sortFields );
+                        childrenMap.scanDocument( value, sortFields );
                     }
                 } else if ( value instanceof List){
                     if ( (Util.isListOfDocuments(value))  ) {
-                        final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover );
+                        final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover, sortFields  );
                         for ( Object child : (List)value ){
-                            subDocument.scanDocument( child);
+                            subDocument.scanDocument( child, sortFields);
                         }
                     } else {
-                        createField( (String)key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover  );
+                        createField( (String)key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover, sortFields );
                     }
                 } else {
                     MetaField field = getField( (String)key );
                     if ( field == null ){
-                        field = createField( (String)key );
+                        field = createField( (String)key, sortFields );
                         field.setMandatory( isFirstDiscover );
                     }
                     field.setTypeFromValue( value );

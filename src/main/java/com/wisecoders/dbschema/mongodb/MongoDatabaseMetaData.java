@@ -79,7 +79,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     }
 
     private String[] createTableRow( String catalogName, String tableName, String type ){
-        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
+        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollectionIfAlreadyLoaded(tableName);
         String[] data = new String[10];
         data[0] = catalogName; // TABLE_CAT
         data[1] = ""; // TABLE_SCHEMA

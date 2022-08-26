@@ -58,7 +58,7 @@ public class JdbcDriver implements Driver
             LOGGER.info("Connect URL: " + url );
             int idx;
             ScanStrategy scan = ScanStrategy.fast;
-            boolean expand = false;
+            boolean expand = false, sortFields = false;
             String newUrl = url, urlWithoutParams = url;
             if ( ( idx = url.indexOf("?")) > 0 ){
                 String paramsURL = url.substring( idx+1);
@@ -72,6 +72,7 @@ public class JdbcDriver implements Driver
                             LOGGER.info("ScanStrategy=" + scan);
                             break;
                         case "expand": expand = Boolean.parseBoolean( pairArr[1]); break;
+                        case "sort": sortFields = Boolean.parseBoolean( pairArr[1]); break;
                         default:
                             if ( sbParams.length() > 0 ) sbParams.append("&");
                             sbParams.append( pair );
@@ -89,7 +90,7 @@ public class JdbcDriver implements Driver
             }
 
             LOGGER.info("MongoClient URL: " + url + " rewritten as " + newUrl );
-            final WrappedMongoClient client = new WrappedMongoClient(newUrl, info, databaseName, scan, expand );
+            final WrappedMongoClient client = new WrappedMongoClient(newUrl, info, databaseName, scan, expand, sortFields );
             return new MongoConnection(client);
         }
         return null;

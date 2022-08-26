@@ -27,10 +27,9 @@ public class WrappedMongoClient {
     private final String databaseName;
     private final String uri;
     private final ScanStrategy scanStrategy;
-    public final boolean expandResultSet;
-    public enum PingStatus{ SUCCEED, FAILED, TIMEOUT }
+    public final boolean expandResultSet, sortFields;
 
-    public WrappedMongoClient(String uri, final Properties prop, final String databaseName, final ScanStrategy scanStrategy, boolean expandResultSet ){
+    public WrappedMongoClient(String uri, final Properties prop, final String databaseName, final ScanStrategy scanStrategy, boolean expandResultSet, boolean sortFields ){
         final ConnectionString connectionString = new ConnectionString(uri){
             @Override
             public Integer getMaxConnectionIdleTime() {
@@ -42,6 +41,7 @@ public class WrappedMongoClient {
         this.uri = uri;
         this.expandResultSet = expandResultSet;
         this.scanStrategy = scanStrategy;
+        this.sortFields = sortFields;
         getDatabaseNames();
     }
 
@@ -102,7 +102,7 @@ public class WrappedMongoClient {
         if ( cachedDatabases.containsKey(dbName )){
             return cachedDatabases.get( dbName);
         }
-        WrappedMongoDatabase db = new WrappedMongoDatabase(mongoClient.getDatabase(dbName), scanStrategy );
+        WrappedMongoDatabase db = new WrappedMongoDatabase(mongoClient.getDatabase(dbName), scanStrategy, sortFields );
         cachedDatabases.put( dbName, db );
         return db;
     }
