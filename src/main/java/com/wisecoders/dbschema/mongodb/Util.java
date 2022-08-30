@@ -1,7 +1,6 @@
 package com.wisecoders.dbschema.mongodb;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -77,15 +76,25 @@ public class Util {
         return java.sql.Types.VARCHAR;
     }
 
-    public static boolean isListOfDocuments(Object obj){
+    public static Class getListElementsClass(Object obj){
         if ( obj instanceof List){
             List list = (List)obj;
+            Class cls = null;
             for ( Object val : list ){
-                if ( !( val instanceof Map ) ) return false;
+                Class _cls = null;
+                if ( val instanceof Map ) _cls = Map.class;
+                else if ( val instanceof Integer ) _cls = Integer.class;
+                else if ( val instanceof Double ) _cls = Double.class;
+                else if ( val instanceof Long ) _cls = Long.class;
+                else if ( val instanceof Boolean ) _cls = Boolean.class;
+                else if ( val instanceof Date ) _cls = Date.class;
+                else if ( val instanceof String ) _cls = String.class;
+                if ( cls == null ) cls = _cls;
+                else if ( cls != _cls ) cls = Object.class;
             }
-            return list.size() > 0;
+            return cls;
         }
-        return false;
+        return null;
     }
 
     public static String getBsonType(Document bsonDefinition){

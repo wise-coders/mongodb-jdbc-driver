@@ -206,13 +206,16 @@ public class MetaObject extends MetaField {
                         childrenMap.scanDocument( value, sortFields );
                     }
                 } else if ( value instanceof List){
-                    if ( (Util.isListOfDocuments(value))  ) {
+                    final Class cls = Util.getListElementsClass(value);
+                    if ( cls == Map.class  ) {
                         final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover, sortFields  );
                         for ( Object child : (List)value ){
                             subDocument.scanDocument( child, sortFields);
                         }
+                    } else if ( cls == null || cls == Object.class ){
+                        createField( (String)key, "array", 2003, isFirstDiscover, sortFields );
                     } else {
-                        createField( (String)key, "array", MetaObject.TYPE_ARRAY, isFirstDiscover, sortFields );
+                        createField( (String)key, "array[" + cls.getSimpleName().toLowerCase() + "]", 2003, isFirstDiscover, sortFields );
                     }
                 } else {
                     MetaField field = getField( (String)key );

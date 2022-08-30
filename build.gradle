@@ -1,18 +1,19 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-        jcenter()
-    }
-    dependencies {
-        classpath "gradle.plugin.install4j.install4j:gradle_plugin:7.0.8"
     }
 }
 plugins{
-    id 'org.hidetake.ssh' version '2.7.1'
+    id "java"
 }
 apply plugin: 'application'
 apply plugin: 'distribution'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(15)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -28,16 +29,15 @@ dependencies {
     //implementation "org.graalvm.truffle:truffle-api:22.0.0.2"
 }
 
+/*
 compileJava{
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
     doFirst {
         options.compilerArgs = [
                 '--module-path', classpath.asPath,
         ]
     }
 }
-
+*/
 jar {
     archiveName ="mongojdbc${version}.jar"
     manifest {
@@ -66,13 +66,6 @@ task tar(type: Tar, dependsOn:['clean','jar']) {
     from "build/libs" include "*.jar"
 }
 
-/*
-task copyInDbSchema(type: Copy,dependsOn:['clean','jar']) {
-    from configurations.runtime.allArtifacts.files
-    from configurations.runtime
-    into "${project.projectDir}/../../dbschema/src/dist/drivers/MongoDb/"
-}*/
-
 task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtimeClasspath.allArtifacts.files
     from configurations.runtimeClasspath
@@ -81,6 +74,7 @@ task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
 }
 
 
+/*
 remotes {
     webServer {
         host = websiteHost
@@ -88,7 +82,6 @@ remotes {
         password = websitePassword
     }
 }
-/*
 task uploadWeb {
     doLast {
         ssh.settings {
