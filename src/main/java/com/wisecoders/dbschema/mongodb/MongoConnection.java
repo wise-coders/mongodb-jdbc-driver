@@ -2,6 +2,7 @@ package com.wisecoders.dbschema.mongodb;
 
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
+import org.graalvm.polyglot.Context;
 
 import java.sql.*;
 import java.util.List;
@@ -400,5 +401,18 @@ public class MongoConnection implements Connection
     public int getNetworkTimeout() throws SQLException {
         return 0;  
     }
+
+	private Context context;
+
+	public Context createContext(){
+		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+		// Without this it doesn't find the JS or Truffle
+		Thread.currentThread().setContextClassLoader( Context.class.getClassLoader());
+		//https://github.com/oracle/graaljs/issues/214
+		if ( context == null ) {
+			context = Context.newBuilder("js").allowAllAccess(true).build();
+		}
+		return context;
+	}
 
 }

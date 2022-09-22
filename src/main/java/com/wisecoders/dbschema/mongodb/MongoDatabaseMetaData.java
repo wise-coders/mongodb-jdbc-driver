@@ -6,7 +6,6 @@ import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 
 import java.sql.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>

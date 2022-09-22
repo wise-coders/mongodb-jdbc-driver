@@ -3,17 +3,14 @@ package com.wisecoders.dbschema.mongodb.structure;
 import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCursor;
 import com.wisecoders.dbschema.mongodb.ScanStrategy;
-import com.wisecoders.dbschema.mongodb.wrappers.WrappedFindIterable;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoCollection;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
@@ -55,7 +52,7 @@ public class MetaCollection extends MetaObject {
     private void scanDocuments(final WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean sortFields ) {
         long scanStartTime = System.currentTimeMillis();
         long cnt = scan(mongoCollection, strategy, true, sortFields);
-        if ( getFieldCount() < 400 && cnt < strategy.SCAN_COUNT && strategy != ScanStrategy.full ){
+        if ( getFieldCount() < 400 && cnt == strategy.SCAN_COUNT && strategy != ScanStrategy.full ){
             cnt +=scan(mongoCollection, strategy, false, sortFields);;
         }
         LOGGER.log( Level.INFO, "Scanned " + mongoCollection + " " + cnt + " documents, " + getFieldCount() + " fields in " + ( System.currentTimeMillis() - scanStartTime ) + "ms" );
@@ -64,8 +61,9 @@ public class MetaCollection extends MetaObject {
     private long scan(WrappedMongoCollection mongoCollection, ScanStrategy strategy, boolean directionUp, boolean sortFields ) {
         long cnt = 0;
         try ( MongoCursor cursor = mongoCollection.find().sort("{_id:" + (directionUp ? "1" : "-1") + "}" ).iterator() ) {
-            while (cursor.hasNext() && ++cnt < strategy.SCAN_COUNT) {
+            while (cursor.hasNext() && cnt < strategy.SCAN_COUNT) {
                 scanDocument(cursor.next(), sortFields);
+                cnt++;
             }
         }
         return cnt;

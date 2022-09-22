@@ -27,7 +27,7 @@ public class MetaField {
 
     MetaField(final MetaObject parentObject, final String name ){
         this.parentObject = parentObject;
-        this.name = name;
+        this.name = (name!= null ? name : "");
     }
 
     void setObjectId(ObjectId objectId){

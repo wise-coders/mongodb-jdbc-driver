@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -130,8 +129,7 @@ public class MongoPreparedStatement implements PreparedStatement {
             }
         }
         try {
-            //https://github.com/oracle/graaljs/issues/214
-            Context context = Context.newBuilder("js").allowAllAccess(true).build();
+            final Context context = connection.createContext();
             boolean dbIsSet = false;
             Value bindings = context.getBindings("js");
             for ( WrappedMongoDatabase db : connection.getDatabases() ){

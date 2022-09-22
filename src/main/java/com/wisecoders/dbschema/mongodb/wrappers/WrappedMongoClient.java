@@ -46,11 +46,16 @@ public class WrappedMongoClient {
     }
 
     public boolean pingServer(){
-            mongoClient.listDatabaseNames();
-            Bson command = new BsonDocument("ping", new BsonInt64(1));
-            mongoClient.getDatabase( databaseName != null && databaseName.length() > 0 ? databaseName : "admin" ).runCommand(command);
+        mongoClient.listDatabaseNames();
+        Bson command = new BsonDocument("ping", new BsonInt64(1));
+        try {
+            mongoClient.getDatabase(databaseName != null && databaseName.length() > 0 ? databaseName : "admin").runCommand(command);
             LOGGER.info("Connected successfully to server.");
             return true;
+        } catch ( Throwable ex ){}
+        mongoClient.getDatabase("admin").runCommand(command);
+        LOGGER.info("Connected successfully to server.");
+        return true;
     }
 
     public void close(){

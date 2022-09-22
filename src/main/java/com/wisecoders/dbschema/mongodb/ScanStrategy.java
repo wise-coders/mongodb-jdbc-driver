@@ -10,7 +10,7 @@ package com.wisecoders.dbschema.mongodb;
 public enum ScanStrategy {
 
 
-    fast(50), medium(200 ), full( Long.MAX_VALUE );
+    fast(200), medium(2000 ), full( Long.MAX_VALUE );
 
     public final long SCAN_COUNT;
 

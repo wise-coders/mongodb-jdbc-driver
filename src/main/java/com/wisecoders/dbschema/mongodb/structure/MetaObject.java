@@ -106,7 +106,7 @@ public class MetaObject extends MetaField {
 
     MetaField findField( String name ){
         for ( MetaField other : fields ){
-            if ( name.startsWith( other.getNameWithPath())){
+            if ( name != null && other.getNameWithPath() != null && name.startsWith( other.getNameWithPath())){
                 MetaField found = null;
                 if ( other instanceof MetaObject){
                     found = ((MetaObject)other).findField(  name );

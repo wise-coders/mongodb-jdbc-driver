@@ -11,16 +11,16 @@ import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import com.wisecoders.dbschema.mongodb.Util;
 import com.wisecoders.dbschema.mongodb.structure.MetaCollection;
 import com.wisecoders.dbschema.mongodb.structure.MetaDatabase;
-import com.wisecoders.dbschema.mongodb.structure.MetaField;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
