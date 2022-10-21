@@ -1,6 +1,7 @@
 package com.wisecoders.dbschema.mongodb;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -89,6 +90,7 @@ public class Util {
                 else if ( val instanceof Boolean ) _cls = Boolean.class;
                 else if ( val instanceof Date ) _cls = Date.class;
                 else if ( val instanceof String ) _cls = String.class;
+                else if ( val instanceof ObjectId) _cls = ObjectId.class;
                 if ( cls == null ) cls = _cls;
                 else if ( cls != _cls ) cls = Object.class;
             }

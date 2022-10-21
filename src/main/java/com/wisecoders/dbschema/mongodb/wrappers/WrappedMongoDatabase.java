@@ -49,7 +49,7 @@ public class WrappedMongoDatabase implements ProxyObject {
                     Document definition = (Document) Util.getByPath(info, "options.validator.$jsonSchema");
                     if (definition != null) {
                         final String name = info.getString("name");
-                        final MetaCollection metaCollection = metaDatabase.createMetaCollection(name);
+                        final MetaCollection metaCollection = metaDatabase.createMetaCollection(name, false);
                         try {
                             metaCollection.visitValidatorNode(null, true, definition, sortFields );
                         } catch (Throwable ex) {
@@ -78,7 +78,7 @@ public class WrappedMongoDatabase implements ProxyObject {
         final MetaCollection metaCollection = metaDatabase.getMetaCollection(collectionName);
         if (metaCollection == null) {
             try {
-                return metaDatabase.createMetaCollection( collectionName ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy, sortFields );
+                return metaDatabase.createMetaCollection( collectionName, true ).scanDocumentsAndIndexes( getCollection(collectionName), scanStrategy, sortFields );
             } catch ( Throwable ex ){
                 LOGGER.log(Level.SEVERE, "Error discovering collection " + mongoDatabase.getName() + "." + collectionName + ". ", ex );
             }

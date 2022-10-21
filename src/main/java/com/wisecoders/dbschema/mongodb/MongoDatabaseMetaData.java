@@ -54,9 +54,9 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      */
     public ResultSet getTables( String catalogName, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         ArrayResultSet resultSet = new ArrayResultSet();
-        resultSet.setColumnNames(new String[]{"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-                "TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME",
-                "REF_GENERATION"});
+        resultSet.setColumnNames(new String[]{"TABLE_CAT", "TABLE_SCHEMA", "TABLE_NAME",
+                "TABLE_TYPE", "REMARKS", "TYPE_CAT", "TYPE_SCHEMA", "TYPE_NAME", "SELF_REFERENCING_COL_NAME",
+                "REF_GENERATION", "IS_VIRTUAL"});
         if ( catalogName == null ){
             for ( String cat : con.client.getDatabaseNames() ) {
                 getTablesByCatalogName(cat, resultSet);
@@ -79,7 +79,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
 
     private String[] createTableRow( String catalogName, String tableName, String type ){
         MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollectionIfAlreadyLoaded(tableName);
-        String[] data = new String[10];
+        String[] data = new String[11];
         data[0] = catalogName; // TABLE_CAT
         data[1] = ""; // TABLE_SCHEMA
         data[2] = tableName; // TABLE_NAME
@@ -90,6 +90,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         data[7] = ""; // TYPE_NAME
         data[8] = ""; // SELF_REFERENCING_COL_NAME
         data[9] = ""; // REF_GENERATION
+        data[10] = collection == null || collection.isVirtual ? "true" : "false";
         return data;
     }
 

@@ -25,8 +25,8 @@ public class MetaDatabase {
         this.name =  name;
     }
 
-    public MetaCollection createMetaCollection(String name ){
-        MetaCollection metaCollection = new MetaCollection(this, name);
+    public MetaCollection createMetaCollection(String name, boolean isVirtual ){
+        MetaCollection metaCollection = new MetaCollection(this, name, isVirtual );
         metaCollections.put( name, metaCollection);
         return metaCollection;
     }

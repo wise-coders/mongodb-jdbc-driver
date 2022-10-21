@@ -188,8 +188,9 @@ public class MetaObject extends MetaField {
 
     private boolean isFirstDiscover = true;
 
-    protected void scanDocument(Object objDocument, boolean sortFields ){
-        if ( objDocument instanceof Map){
+    private static final int DISCOVER_CHILD_CASCADE_DEEPNESS = 25;
+    protected void scanDocument(Object objDocument, boolean sortFields, int level ){
+        if ( level < DISCOVER_CHILD_CASCADE_DEEPNESS && objDocument instanceof Map){
             Map document = (Map)objDocument;
             for ( Object key : document.keySet() ){
                 final Object value = document.get( key );
@@ -199,23 +200,27 @@ public class MetaObject extends MetaField {
                     if ( Util.allKeysAreNumbers( subMap )){
                         final MetaObject childrenMap = createArrayField(key.toString(), "array[int]", isFirstDiscover, sortFields );
                         for ( Object subKey : subMap.keySet() ) {
-                            childrenMap.scanDocument(subMap.get( subKey ), sortFields );
+                            childrenMap.scanDocument(subMap.get( subKey ), sortFields, level+1 );
                         }
                     } else {
                         final MetaObject childrenMap = createObjectField(key.toString(), isFirstDiscover, sortFields );
-                        childrenMap.scanDocument( value, sortFields );
+                        childrenMap.scanDocument( value, sortFields, level+1 );
                     }
                 } else if ( value instanceof List){
+                    final List list = (List)value;
                     final Class cls = Util.getListElementsClass(value);
                     if ( cls == Map.class  ) {
                         final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover, sortFields  );
-                        for ( Object child : (List)value ){
-                            subDocument.scanDocument( child, sortFields);
+                        for ( Object child : list ){
+                            subDocument.scanDocument( child, sortFields, level+1);
                         }
                     } else if ( cls == null || cls == Object.class ){
                         createField( (String)key, "array", 2003, isFirstDiscover, sortFields );
                     } else {
-                        createField( (String)key, "array[" + cls.getSimpleName().toLowerCase() + "]", 2003, isFirstDiscover, sortFields );
+                        final MetaField field = createField( (String)key, "array[" + cls.getSimpleName().toLowerCase() + "]", 2003, isFirstDiscover, sortFields );
+                        if ( list.size() > 0 && list.get(0) instanceof ObjectId ){
+                            field.setObjectId( (ObjectId)list.get(0));
+                        }
                     }
                 } else {
                     MetaField field = getField( (String)key );

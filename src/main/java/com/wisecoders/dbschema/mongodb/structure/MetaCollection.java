@@ -21,12 +21,14 @@ import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 public class MetaCollection extends MetaObject {
 
     public final MetaDatabase metaDatabase;
+    public final boolean isVirtual;
 
     public final List<MetaIndex> metaIndexes = new ArrayList<>();
 
-    public MetaCollection( final MetaDatabase metaDatabase, final String name ) {
+    public MetaCollection( final MetaDatabase metaDatabase, final String name, boolean isVirtual) {
         super(null, name );
         this.metaDatabase = metaDatabase;
+        this.isVirtual = isVirtual;
         setTypeName("object");
         setJavaType( TYPE_OBJECT );
         final MetaField idField = new MetaField(this, "_id" );
@@ -62,7 +64,7 @@ public class MetaCollection extends MetaObject {
         long cnt = 0;
         try ( MongoCursor cursor = mongoCollection.find().sort("{_id:" + (directionUp ? "1" : "-1") + "}" ).iterator() ) {
             while (cursor.hasNext() && cnt < strategy.SCAN_COUNT) {
-                scanDocument(cursor.next(), sortFields);
+                scanDocument(cursor.next(), sortFields, 0);
                 cnt++;
             }
         }
