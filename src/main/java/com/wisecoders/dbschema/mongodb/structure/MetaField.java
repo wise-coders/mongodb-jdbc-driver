@@ -114,12 +114,10 @@ public class MetaField {
             Class<?> valueCls = value.getClass();
             if ( typeClass == null ) {
                 typeClass = valueCls;
-            } else {
-                if ( typeClass != valueCls ) {
-                    // valueCls is superclass or typeClass
-                    if ( valueCls.isAssignableFrom( typeClass )) typeClass = valueCls;
-                    else if ( !typeClass.isAssignableFrom( valueCls )) typeClass = Object.class;
-                }
+            } else if (typeClass != valueCls) {
+                // valueCls is superclass or typeClass
+                if (valueCls.isAssignableFrom(typeClass)) typeClass = valueCls;
+                else if (!typeClass.isAssignableFrom(valueCls)) typeClass = Object.class;
             }
         }
     }
@@ -130,6 +128,9 @@ public class MetaField {
         }
         if ( typeClass != null ) {
             String type = typeClass.getName();
+            if ( "Boolean".equalsIgnoreCase(type )) {
+                type = "bool";
+            }
             if (type.lastIndexOf('.') > 0) type = type.substring(type.lastIndexOf('.') + 1);
             return type;
         }
