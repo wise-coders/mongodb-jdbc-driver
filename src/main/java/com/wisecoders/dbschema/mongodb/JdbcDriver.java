@@ -59,6 +59,7 @@ public class JdbcDriver implements Driver
             int idx;
             ScanStrategy scan = ScanStrategy.fast;
             boolean expand = false, sortFields = false;
+            String trustStore = null, trustStorePassword = null;
             String newUrl = url, urlWithoutParams = url;
             if ( ( idx = url.indexOf("?")) > 0 ){
                 String paramsURL = url.substring( idx+1);
@@ -67,12 +68,15 @@ public class JdbcDriver implements Driver
                 for ( String pair: paramsURL.split("&")){
                     String[] pairArr = pair.split("=");
                     String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
+                    String value = pairArr[1];
                     switch( key ){
-                        case "scan": try { scan = ScanStrategy.valueOf( pairArr[1]);} catch ( IllegalArgumentException ex ){}
+                        case "scan": try { scan = ScanStrategy.valueOf( value);} catch ( IllegalArgumentException ex ){}
                             LOGGER.info("ScanStrategy=" + scan);
                             break;
-                        case "expand": expand = Boolean.parseBoolean( pairArr[1]); break;
-                        case "sort": sortFields = Boolean.parseBoolean( pairArr[1]); break;
+                        case "expand": expand = Boolean.parseBoolean( value); break;
+                        case "sort": sortFields = Boolean.parseBoolean( value); break;
+                        case "truststore": trustStore = value; break;
+                        case "truststorepassword": trustStorePassword = value; break;
                         default:
                             if ( sbParams.length() > 0 ) sbParams.append("&");
                             sbParams.append( pair );
@@ -80,6 +84,12 @@ public class JdbcDriver implements Driver
                     }
                 }
                 newUrl = url.substring(0, idx) + "?" + sbParams;
+            }
+            if ( trustStore != null ){
+                System.setProperty("javax.net.ssl.trustStore", trustStore);
+            }
+            if ( trustStorePassword != null ){
+                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword );
             }
             String databaseName = "admin";
             if ( urlWithoutParams.endsWith("/")) {

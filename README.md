@@ -46,6 +46,11 @@ jdbc:mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[database][
 The driver is using the same URL, options and parameters as [native MongoDb Java driver](https://docs.mongodb.com/manual/reference/connection-string/). 
 Different is only the 'jdbc:' prefix.
 
+Additional properties:
+- for SSL connectivity: trustStore and trustStorePassword, which will be stored in Java system properties. 
+  Please set tls=true when using them.
+- scan=<fast|medium|full>
+- 
 
 ## How to Use the Driver
 
