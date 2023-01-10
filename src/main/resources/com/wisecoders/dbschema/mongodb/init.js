@@ -6,6 +6,22 @@ var DBRef = function( colName, oid ) {
   return new com.mongodb.DBRef( colName, oid );
 }
 
+var UUID = function( uuidStr ) {
+  return java.util.UUID.fromString( uuidStr );
+}
+
+var NumberLong = function( val ) {
+  return java.lang.Long.parseLong( val );
+}
+
+var NumberInt = function( val ) {
+  return java.lang.Integer.parseInt( val );
+}
+
+var NumberDecimal = function( val ) {
+  return java.lang.Double.parseDouble( val );
+}
+
 var ISODate = function( str ) {
     var formats = [
     "yyyy-MM-dd'T'HH:mm:ss'Z'",

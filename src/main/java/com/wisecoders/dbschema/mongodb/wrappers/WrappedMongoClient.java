@@ -9,6 +9,7 @@ import com.wisecoders.dbschema.mongodb.ScanStrategy;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.Document;
+import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 
 import java.sql.SQLException;
@@ -34,6 +35,11 @@ public class WrappedMongoClient {
             @Override
             public Integer getMaxConnectionIdleTime() {
                 return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public UuidRepresentation getUuidRepresentation() {
+                return UuidRepresentation.STANDARD;
             }
         };
         this.mongoClient = MongoClients.create(connectionString);
@@ -75,7 +81,7 @@ public class WrappedMongoClient {
     }
 
     // USE STATIC SO OPENING A NEW CONNECTION WILL REMEMBER THIS
-    public static final List<String> createdDatabases = new ArrayList<String>();
+    public static final List<String> createdDatabases = new ArrayList<>();
 
 
     public String getCurrentDatabaseName() {
@@ -84,7 +90,7 @@ public class WrappedMongoClient {
     }
 
     public List<String> getDatabaseNames() {
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         try {
             // THIS OFTEN THROWS EXCEPTION BECAUSE OF MISSING RIGHTS. IN THIS CASE WE ONLY ADD CURRENT KNOWN DB.
             for ( String dbName : listDatabaseNames() ){
@@ -113,7 +119,7 @@ public class WrappedMongoClient {
     }
 
     public List<WrappedMongoDatabase> getDatabases() {
-        final List<WrappedMongoDatabase> list = new ArrayList<WrappedMongoDatabase>();
+        final List<WrappedMongoDatabase> list = new ArrayList<>();
 
         for ( String dbName : getDatabaseNames() ){
             list.add( getDatabase(dbName));
@@ -152,7 +158,7 @@ public class WrappedMongoClient {
     }
 
     public List<String> getViewNames(String databaseName) throws SQLException {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             WrappedMongoDatabase db = getDatabase(databaseName);
             if ( db != null ){
