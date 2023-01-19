@@ -5,6 +5,7 @@ buildscript {
 }
 plugins{
     id "java"
+    id 'maven-publish'
 }
 apply plugin: 'application'
 apply plugin: 'distribution'
@@ -46,6 +47,18 @@ jar {
         attributes 'Implementation-Vendor-Id': "dbschema.com"
         attributes 'Implementation-Vendor': "Wise Coders"
         attributes 'Implementation-Version': new Date().format( 'yyMMdd' )
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.wisecoders.dbschema'
+            artifactId = 'mongodb-jdbc-driver'
+            version = '1.0.0'
+
+            from components.java
+        }
     }
 }
 
