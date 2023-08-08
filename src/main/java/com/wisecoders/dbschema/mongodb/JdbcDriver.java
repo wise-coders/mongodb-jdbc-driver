@@ -68,7 +68,7 @@ public class JdbcDriver implements Driver
                 for ( String pair: paramsURL.split("&")){
                     String[] pairArr = pair.split("=");
                     String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
-                    String value = pairArr[1];
+                    String value = pairArr.length == 2 ? pairArr[1] : "";
                     switch( key ){
                         case "scan": try { scan = ScanStrategy.valueOf( value);} catch ( IllegalArgumentException ex ){}
                             LOGGER.info("ScanStrategy=" + scan);
@@ -108,7 +108,7 @@ public class JdbcDriver implements Driver
 
 
     /**
-     * URLs accepted are of the form: jdbc:mongodb[+srv]://<server>[:27017]/<db-name>
+     * URLs accepted are of the form: jdbc:mongodb[+srv]://&lt;server&gt;[:27017]/&lt;db-name&gt;
      *
      * @see java.sql.Driver#acceptsURL(java.lang.String)
      */

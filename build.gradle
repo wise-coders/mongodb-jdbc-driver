@@ -4,9 +4,13 @@ buildscript {
     }
 }
 plugins{
-    id "java"
+    id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 apply plugin: 'application'
 apply plugin: 'distribution'
 
@@ -16,11 +20,11 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.mongodb:mongodb-driver-sync:4.8.1'
-    implementation 'org.graalvm.js:js:22.3.0'
-    implementation 'org.graalvm.js:js-scriptengine:22.3.0'
-    implementation 'org.graalvm.truffle:truffle-api:22.3.0'
-    implementation 'com.google.code.gson:gson:2.10'
+    implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+    implementation 'org.graalvm.js:js:23.0.1'
+    implementation 'org.graalvm.js:js-scriptengine:23.0.1'
+    implementation 'org.graalvm.truffle:truffle-api:23.0.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'junit:junit:4.13.2'
     //implementation "org.graalvm.sdk:graal-sdk:22.0.0.2"
     //implementation "org.graalvm.truffle:truffle-api:22.0.0.2"
@@ -38,11 +42,11 @@ compileJava{
 }
 
 jar {
-    archiveName ="mongojdbc${version}.jar"
+    archiveFileName ="mongojdbc${driverVersion}.jar"
     manifest {
         attributes 'Main-Class': 'com.wisecoders.dbschema.mongodb.JdbcDriver'
         attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
-        attributes 'Specification-Version': "$version"
+        attributes 'Specification-Version': "$driverVersion"
         attributes 'Specification-Vendor': "Wise Coders"
         attributes 'Implementation-Vendor-Id': "dbschema.com"
         attributes 'Implementation-Vendor': "Wise Coders"
@@ -55,7 +59,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'com.wisecoders.dbschema'
             artifactId = 'mongodb-jdbc-driver'
-            version = '1.0.0'
+            version = '${driverVersion}'
 
             from components.java
         }
@@ -82,6 +86,81 @@ task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
     from configurations.runtimeClasspath
     from "build/libs" include "*.jar"
     into "${System.getProperty('user.home')}/.DbSchema/drivers/MongoDb/"
+}
+
+
+
+group = "com.wisecoders"
+archivesBaseName = "mongodb-jdbc-drvier"
+version = "4.8.1"
+
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+javadoc {
+    options.addBooleanOption('html5', true)
+}
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'mongodb-jdbc-driver'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'MongoDB-JDBC-Driver'
+                description = 'MongoDB JDBC Driver'
+                url = 'https://dbschema.com/jdbc-driver/MongoDb.html'
+                properties = [
+                        myProp: "value",
+                        "prop.with.dots": "anotherValue"
+                ]
+                licenses {
+                    license {
+                        name = 'GPL-3Plus dual license. Contributions only to https://github.com/wise-coders/mongodb-jdbc-driver'
+                        url = 'https://github.com/wise-coders/mongodb-jdbc-driver'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'wisecoders'
+                        name = 'Wise Coders GmbH'
+                        email = 'support@wisecoders.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/wise-coders/mongodb-jdbc-driver'
+                    developerConnection = 'scm:git:ssh://github.com/wise-coders/mongodb-jdbc-driver'
+                    url = 'https://github.com/wise-coders/mongodb-jdbc-driver'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = project.properties["sonatypeUsername"]
+                password = project.properties["sonatypePassword"]
+            }
+        }
+    }
+}
+signing {
+    sign publishing.publications.mavenJava
 }
 
 
