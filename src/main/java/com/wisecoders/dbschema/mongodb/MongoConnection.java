@@ -352,7 +352,7 @@ public class MongoConnection implements Connection
 	}
 
 	/**
-	 * @return
+	 * @return the URI
 	 */
 	public String getUrl()
 	{
@@ -405,7 +405,7 @@ public class MongoConnection implements Connection
 	private Context context;
 
 	public Context createContext(){
-		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+		// System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		// Without this it doesn't find the JS or Truffle
 		Thread.currentThread().setContextClassLoader( Context.class.getClassLoader());
 		//https://github.com/oracle/graaljs/issues/214
