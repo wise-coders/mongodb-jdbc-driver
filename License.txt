@@ -1,6 +1,8 @@
 Copyright (c) 2021, Wise Coders GmbH
 All rights reserved.
 
+[CC-BY-ND - Attribution-NoDerivs](https://creativecommons.org/licenses/by-nd/4.0/).
+
 Redistribution and use in source and binary forms, without modification, are permitted provided that the following conditions are met:
 
 * No modification on the code are allowed. Changes accepted only into https://github.com/wise-coders/mongodb-jdbc-driver
