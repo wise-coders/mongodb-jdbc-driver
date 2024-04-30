@@ -12,8 +12,8 @@ import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
 
 
 /**
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
- * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
+ * Licensed under <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.en">CC BY-ND 4.0 DEED</a>, copyright <a href="https://wisecoders.com">Wise Coders GmbH</a>, used by <a href="https://dbschema.com">DbSchema Database Designer</a>.
+ * Code modifications allowed only as pull requests to the <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public GIT repository</a>.
  */
 public class MetaDatabase {
 
@@ -58,7 +58,7 @@ public class MetaDatabase {
                 collectFieldsWithObjectId(metaFields);
                 if ( !metaFields.isEmpty() ){
                     for ( MetaCollection _metaCollection : getMetaCollections() ){
-                        final WrappedMongoCollection mongoCollection = mongoDatabase.getCollection( _metaCollection.name );
+                        final WrappedMongoCollection<Document> mongoCollection = mongoDatabase.getCollection( _metaCollection.name );
                         if ( mongoCollection != null ){
                             ObjectId[] objectIds = new ObjectId[metaFields.size()];
 

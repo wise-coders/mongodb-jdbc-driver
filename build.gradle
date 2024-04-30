@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
     implementation 'org.graalvm.js:js:23.0.1'
     implementation 'org.graalvm.js:js-scriptengine:23.0.1'
     implementation 'org.graalvm.truffle:truffle-api:23.0.1'
@@ -92,7 +92,7 @@ task copyInUserHome(type: Copy,dependsOn:['clean','jar']) {
 
 group = "com.wisecoders"
 archivesBaseName = "mongodb-jdbc-drvier"
-version = "4.8.1"
+version = "4.8.2"
 
 
 java {

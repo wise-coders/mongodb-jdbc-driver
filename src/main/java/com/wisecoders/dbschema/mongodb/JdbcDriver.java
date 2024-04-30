@@ -14,8 +14,8 @@ import java.util.logging.*;
  * Example :
  * jdbc:mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
  *
- * Copyright Wise Coders GmbH. The MongoDB JDBC driver is build to be used with  <a href="https://dbschema.com">DbSchema Database Designer</a>
- * Free to use by everyone, code modifications allowed only to the  <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public repository</a>
+ * Licensed under <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.en">CC BY-ND 4.0 DEED</a>, copyright <a href="https://wisecoders.com">Wise Coders GmbH</a>, used by <a href="https://dbschema.com">DbSchema Database Designer</a>.
+ * Code modifications allowed only as pull requests to the <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public GIT repository</a>.
  */
 public class JdbcDriver implements Driver
 {
@@ -70,7 +70,7 @@ public class JdbcDriver implements Driver
                     String key = pairArr.length == 2 ? pairArr[0].toLowerCase() : "";
                     String value = pairArr.length == 2 ? pairArr[1] : "";
                     switch( key ){
-                        case "scan": try { scan = ScanStrategy.valueOf( value);} catch ( IllegalArgumentException ex ){}
+                        case "scan": try { scan = ScanStrategy.valueOf( value);} catch ( IllegalArgumentException ignore ){}
                             LOGGER.info("ScanStrategy=" + scan);
                             break;
                         case "expand": expand = Boolean.parseBoolean( value); break;
