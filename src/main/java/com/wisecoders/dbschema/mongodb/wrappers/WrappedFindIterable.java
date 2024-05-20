@@ -111,11 +111,6 @@ public class WrappedFindIterable<TResult> implements com.mongodb.client.MongoIte
         return this;
     }
 
-    public WrappedFindIterable oplogReplay(boolean b) {
-        findIterable.oplogReplay( b );
-        return this;
-    }
-
     public WrappedFindIterable partial(boolean b) {
         findIterable.partial( b );
         return this;
