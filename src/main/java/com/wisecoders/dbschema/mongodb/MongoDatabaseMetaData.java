@@ -5,6 +5,7 @@ import com.wisecoders.dbschema.mongodb.structure.*;
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoDatabase;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -99,27 +100,39 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      *      java.lang.String)
      */
     @Override
-    public ResultSet getColumns(String catalogName, String schemaName, String tableNamePattern, String columnNamePattern) {
-        // As far as this driver implementation goes, every "table" in MongoDB is actually a collection, and
-        // every collection "table" has two columns - "_id" column which is the primary key, and a "document"
-        // column which is the JSON document corresponding to the "_id". An "_id" value can be specified on
-        // insert, or it can be omitted, in which case MongoDB generates a unique value.
-        MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableNamePattern);
+    public ResultSet getColumns(String catalogName, String schemaName, String tableNamePattern, String columnNamePattern)
+        throws SQLException {
+        List<String> tableNames = new ArrayList<>();
+
+        if (tableNamePattern == null) {
+            tableNames.addAll(con.client.getCollectionNames(catalogName));
+        } else {
+            tableNames.add(tableNamePattern);
+        }
 
         ArrayResultSet result = new ArrayResultSet();
-        result.setColumnNames(new String[] { "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME",
-                "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX",
-                "NULLABLE", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH",
-                "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
-                "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT" });
+        result.setColumnNames(new String[] {"TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME",
+            "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH", "DECIMAL_DIGITS", "NUM_PREC_RADIX",
+            "NULLABLE", "REMARKS", "COLUMN_DEF", "SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH",
+            "ORDINAL_POSITION", "IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE",
+            "SOURCE_DATA_TYPE", "IS_AUTOINCREMENT"});
 
-        if ( collection != null ){
-            for ( MetaField field : collection.fields){
-                if ( columnNamePattern == null || columnNamePattern.equals( field.name )){
-                    exportColumnsRecursive(collection, result, field);
+        for (String tableName : tableNames) {
+            // As far as this driver implementation goes, every "table" in MongoDB is actually a collection, and
+            // every collection "table" has two columns - "_id" column which is the primary key, and a "document"
+            // column which is the JSON document corresponding to the "_id". An "_id" value can be specified on
+            // insert, or it can be omitted, in which case MongoDB generates a unique value.
+            MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
+
+            if (collection != null) {
+                for (MetaField field : collection.fields) {
+                    if (columnNamePattern == null || columnNamePattern.equals(field.name)) {
+                        exportColumnsRecursive(collection, result, field);
+                    }
                 }
             }
         }
+
         return result;
     }
 
@@ -187,7 +200,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                                 null, // "TABLE_SCHEMA",
                                 collection.name, // "TABLE_NAME", (i.e. MongoDB Collection Name)
                                 field.getNameWithPath(), // "COLUMN_NAME",
-                                "" + index.metaFields.indexOf( field ) , // "ORDINAL_POSITION"
+                                "" + index.metaFields.indexOf( field ) + 1 , // "ORDINAL_POSITION"
                                 index.name // "INDEX_NAME",
                         });
                     }
@@ -258,7 +271,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
                                 collection.name, // "INDEX QUALIFIER",
                                 index.name, // "INDEX_NAME",
                                 "0", // "TYPE",
-                                "" + index.metaFields.indexOf( field ) , // "ORDINAL_POSITION"
+                                "" + index.metaFields.indexOf( field ) + 1 , // "ORDINAL_POSITION"
                                 field.getNameWithPath(), // "COLUMN_NAME",
                                 "A", // "ASC_OR_DESC",
                                 "0", // "CARDINALITY",
@@ -1183,6 +1196,14 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
         return EMPTY_RESULT_SET;
     }
 
+    private String[] supportedTableTypes() {
+        if (con.client.expandResultSet) {
+            return new String[] { "TABLE" };
+        } else {
+            return new String[] { "COLLECTION" };
+        }
+    }
+
     /**
      * @see java.sql.DatabaseMetaData#getTableTypes()
      */
@@ -1191,11 +1212,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     {
         ArrayResultSet result = new ArrayResultSet();
 
-        if (con.client.expandResultSet) {
-            result.addRow(new String[] { "TABLE" });
-        } else {
-            result.addRow(new String[] { "COLLECTION" });
-        }
+        result.addRow(supportedTableTypes());
 
         return result;
     }
