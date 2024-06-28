@@ -296,39 +296,32 @@ public class ArrayResultSet implements ResultSet {
 
 	public boolean getBoolean(String columnLabel) throws SQLException
 	{
-		checkClosed();
-
-		return false;
+		return Boolean.parseBoolean(getString(columnLabel));
 	}
 
 	public byte getByte(String columnLabel) throws SQLException
 	{
-
-		return 0;
+		return Byte.parseByte(getString(columnLabel));
 	}
 
 	public short getShort(String columnLabel) throws SQLException
 	{
-
-		return 0;
+		return Short.parseShort(getString(columnLabel));
 	}
 
 	public int getInt(String columnLabel) throws SQLException
 	{
-
-		return 0;
+		return Integer.parseInt(getString(columnLabel));
 	}
 
 	public long getLong(String columnLabel) throws SQLException
 	{
-
-		return 0;
+		return Long.parseLong(getString(columnLabel));
 	}
 
 	public float getFloat(String columnLabel) throws SQLException
 	{
-
-		return 0;
+		return Float.parseFloat(getString(columnLabel));
 	}
 
 	public double getDouble(String columnLabel) throws SQLException
@@ -338,8 +331,7 @@ public class ArrayResultSet implements ResultSet {
 
 	public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException
 	{
-
-		return null;
+		return BigDecimal.valueOf(getLong(columnLabel), scale);
 	}
 
 	public byte[] getBytes(String columnLabel) throws SQLException
@@ -349,20 +341,17 @@ public class ArrayResultSet implements ResultSet {
 
 	public Date getDate(String columnLabel) throws SQLException
 	{
-
-		return null;
+		return Date.valueOf(getString(columnLabel));
 	}
 
 	public Time getTime(String columnLabel) throws SQLException
 	{
-
-		return null;
+		return Time.valueOf(getString(columnLabel));
 	}
 
 	public Timestamp getTimestamp(String columnLabel) throws SQLException
 	{
-
-		return null;
+		return Timestamp.valueOf(getString(columnLabel));
 	}
 
 	public InputStream getAsciiStream(String columnLabel) throws SQLException

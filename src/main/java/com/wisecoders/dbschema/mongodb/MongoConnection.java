@@ -163,7 +163,7 @@ public class MongoConnection implements Connection
 		checkClosed();
 		// Since the only valid value for MongDB is Connection.TRANSACTION_NONE, and the javadoc for this method
 		// indicates that this is not a valid value for level here, throw unsupported operation exception.
-		throw new UnsupportedOperationException("MongoDB provides no support for transactions.");
+		// throw new UnsupportedOperationException("MongoDB provides no support for transactions.");
 	}
 
 	/**

@@ -335,19 +335,20 @@ public class MongoPreparedStatement implements PreparedStatement {
     @Override
     public int getQueryTimeout() throws SQLException {
         checkClosed();
-        throw new SQLFeatureNotSupportedException("MongoDB provides no support for query timeouts.");
+        // throw new SQLFeatureNotSupportedException("MongoDB provides no support for query timeouts.");
+        return Integer.MAX_VALUE;
     }
 
     @Override
     public void setQueryTimeout(final int seconds) throws SQLException {
         checkClosed();
-        throw new SQLFeatureNotSupportedException("MongoDB provides no support for query timeouts.");
+        // throw new SQLFeatureNotSupportedException("MongoDB provides no support for query timeouts.");
     }
 
     @Override
     public void cancel() throws SQLException {
         checkClosed();
-        throw new SQLFeatureNotSupportedException("MongoDB provides no support for interrupting an operation.");
+        // throw new SQLFeatureNotSupportedException("MongoDB provides no support for interrupting an operation.");
     }
 
     @Override
@@ -779,7 +780,3 @@ public class MongoPreparedStatement implements PreparedStatement {
 
     }
 }
-
-
-
-
