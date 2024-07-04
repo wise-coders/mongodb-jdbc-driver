@@ -3,6 +3,7 @@ package com.wisecoders.dbschema.mongodb;
 
 import com.wisecoders.dbschema.mongodb.wrappers.WrappedMongoClient;
 
+import java.io.File;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.*;
@@ -25,6 +26,11 @@ public class JdbcDriver implements Driver
 
     static {
         try {
+            final File logsFile = new File("~/.DbSchema/logs/");
+            if ( !logsFile.exists()) {
+                logsFile.mkdirs();
+            }
+
             DriverManager.registerDriver( new JdbcDriver());
             LOGGER.setLevel(Level.ALL);
 
