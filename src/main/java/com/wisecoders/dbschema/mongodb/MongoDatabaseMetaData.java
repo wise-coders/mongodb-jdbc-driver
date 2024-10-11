@@ -8,6 +8,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.wisecoders.dbschema.mongodb.JdbcDriver.LOGGER;
+
 /**
  * Licensed under <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.en">CC BY-ND 4.0 DEED</a>, copyright <a href="https://wisecoders.com">Wise Coders GmbH</a>, used by <a href="https://dbschema.com">DbSchema Database Designer</a>.
  * Code modifications allowed only as pull requests to the <a href="https://github.com/wise-coders/mongodb-jdbc-driver">public GIT repository</a>.
@@ -124,6 +126,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
             // insert, or it can be omitted, in which case MongoDB generates a unique value.
             MetaCollection collection = con.client.getDatabase(catalogName).getMetaCollection(tableName);
 
+            //LOGGER.info( "Export Collection '" + tableName + "' fields");
             if (collection != null) {
                 for (MetaField field : collection.fields) {
                     if (columnNamePattern == null || columnNamePattern.equals(field.name)) {
@@ -137,6 +140,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
     }
 
     private void exportColumnsRecursive(MetaCollection collection, ArrayResultSet result, MetaField field) {
+        //LOGGER.info( "Export Collection '" + collection.name + "' field '" + field.getNameWithPath() + "'");
         result.addRow(new String[] { collection.metaDatabase.name, // "TABLE_CAT",
                 null, // "TABLE_SCHEMA",
                 collection.name, // "TABLE_NAME", (i.e. MongoDB Collection Name)

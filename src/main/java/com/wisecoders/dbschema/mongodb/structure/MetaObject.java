@@ -35,7 +35,7 @@ public class MetaObject extends MetaField {
         final MetaField field = new MetaField( this, name );
         fields.add( field );
         if ( sortFields ) {
-            Collections.sort(fields, FIELDS_COMPARATOR);
+            fields.sort(FIELDS_COMPARATOR);
         }
         return field;
     }
@@ -50,7 +50,7 @@ public class MetaObject extends MetaField {
         field.setMandatory( mandatory );
         fields.add( field );
         if ( sortFields ) {
-            Collections.sort(fields, FIELDS_COMPARATOR);
+            fields.sort(FIELDS_COMPARATOR);
         }
         return field;
     }
@@ -64,7 +64,7 @@ public class MetaObject extends MetaField {
         json.setJavaType( TYPE_OBJECT );
         fields.add( json );
         if ( sortFields ){
-            Collections.sort( fields, FIELDS_COMPARATOR );
+            fields.sort(FIELDS_COMPARATOR);
         }
         json.setMandatory( mandatory );
         return json;
@@ -91,7 +91,7 @@ public class MetaObject extends MetaField {
         json.setMandatory( mandatoryIfNew);
         fields.add( json );
         if ( sortFields ){
-            Collections.sort( fields, FIELDS_COMPARATOR );
+            fields.sort(FIELDS_COMPARATOR);
         }
         return json;
     }
@@ -120,7 +120,7 @@ public class MetaObject extends MetaField {
 
     public void visitValidatorNode(String name, boolean mandatory, Document bsonDefinition, boolean sortFields ) {
         List<Object> enumValues = null;
-        try { enumValues = bsonDefinition.getList("enum", Object.class); } catch ( Throwable ex ){}
+        try { enumValues = bsonDefinition.getList("enum", Object.class); } catch ( Throwable ignore ){}
         if (enumValues == null) {
             String bsonType = Util.getBsonType( bsonDefinition );
             switch (bsonType) {
@@ -207,7 +207,7 @@ public class MetaObject extends MetaField {
                         childrenMap.scanDocument( value, sortFields, level+1 );
                     }
                 } else if ( value instanceof List){
-                    final List list = (List)value;
+                    final List<?> list = (List)value;
                     final Class cls = Util.getListElementsClass(value);
                     if ( cls == Map.class  ) {
                         final MetaObject subDocument = createArrayField(key.toString(), "array[object]", isFirstDiscover, sortFields  );
@@ -218,7 +218,7 @@ public class MetaObject extends MetaField {
                         createField( (String)key, "array", 2003, isFirstDiscover, sortFields );
                     } else {
                         final MetaField field = createField( (String)key, "array[" + cls.getSimpleName().toLowerCase() + "]", 2003, isFirstDiscover, sortFields );
-                        if ( list.size() > 0 && list.get(0) instanceof ObjectId ){
+                        if ( !list.isEmpty() && list.get(0) instanceof ObjectId ){
                             field.setObjectId( (ObjectId)list.get(0));
                         }
                     }

@@ -12,9 +12,9 @@ Therefore, the JDBC URL is the same as [MongoDb URL](https://mongodb.github.io/m
 * The driver returns by default a ResultSet with a single Object. Use `resultSet.getObject(1)` to get this object.
 Adding the parameter `expand=true` in the URL will create a column in the result set for each key in the result document.
 If expand is set the driver will read ahead a number of rows in order to create a correct ResultSetMetaData. This is transparent for the user.
-This because the first document in the result may have less keys as the next records.
+This because the first document in the result may have fewer keys as the next records.
 
-* To be able to execute native MongoDb queries we embedded an Rhino JavaScript engine inside the driver.
+* To be able to execute native MongoDb queries we embedded a Rhino JavaScript engine inside the driver.
  Each time you execute a query we parse and run it as JavaScript with Rhino.
 
 

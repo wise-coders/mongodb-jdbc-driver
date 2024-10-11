@@ -66,14 +66,14 @@ public class WrappedMongoDatabase implements ProxyObject {
     }
 
     public MetaCollection getMetaCollectionIfAlreadyLoaded( String collectionName) {
-        if (collectionName == null || collectionName.length() == 0) return null;
+        if (collectionName == null || collectionName.isEmpty()) return null;
 
         return metaDatabase.getMetaCollection(collectionName);
     }
 
 
     public MetaCollection getMetaCollection( String collectionName){
-        if ( collectionName == null || collectionName.length() == 0 ) return null;
+        if ( collectionName == null || collectionName.isEmpty()) return null;
 
         final MetaCollection metaCollection = metaDatabase.getMetaCollection(collectionName);
         if (metaCollection == null) {
