@@ -874,7 +874,7 @@ public class MongoDatabaseMetaData implements DatabaseMetaData
      */
     public boolean supportsCatalogsInTableDefinitions() throws SQLException
     {
-        return false;
+        return true;
     }
 
     public boolean supportsCatalogsInIndexDefinitions() throws SQLException
